@@ -26,7 +26,7 @@ public class Config {
     private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
     private static ConfigHolder config, cooldowns, trades;
 
-    public static boolean allowEggs;
+    public static boolean allowEggs, regenOnRestart, regenOverwritePlayers;
     public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt;
     public static long defCooldown;
 
@@ -36,6 +36,8 @@ public class Config {
             cooldowns = getLoader(STORAGE, "cooldowns.conf", false);
             trades = getLoader(STORAGE, "trades.conf", false);
             allowEggs = config.getNode("allow-eggs").getBoolean(true);
+            regenOnRestart = config.getNode("regen-on-restart").getBoolean(false);
+            regenOverwritePlayers = config.getNode("regen-overwrite-players").getBoolean(false);
             poolSize = config.getNode("trades-size").getInt(100);
             defCooldown = config.getNode("default-cooldown").getLong(600000);
             minLvl = config.getNode("min-level").getInt(5);
@@ -43,11 +45,13 @@ public class Config {
             shinyRate = config.getNode("shiny-rate").getInt(1365);
             legendRate = config.getNode("legendary-rate").getInt(8192);
             announceInt = config.getNode("announcement-interval").getInt(600000);
+            boolean startup = Manager.trades == null;
             Manager.trades = new TradeEntry[poolSize];
             List<? extends ConfigurationNode> trades = Config.trades.getNode("trades").getChildrenList();
             for (int i = 0; i < poolSize && i < trades.size(); i++) {
                 Manager.trades[i] = deserializeTrade(trades.get(i));
             }
+            Manager.fillPool(startup && regenOnRestart, regenOverwritePlayers);
         } catch (IOException | IllegalArgumentException e) {
             WonderTrade.getLogger().error("Error loading config: " + e.getMessage());
         }

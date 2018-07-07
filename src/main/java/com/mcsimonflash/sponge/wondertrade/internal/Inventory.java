@@ -48,7 +48,7 @@ public class Inventory {
             .add(Keys.DYE_COLOR, DyeColors.BLUE)
             .build());
     private static final Element CLOSE = Element.of(createItem(ItemTypes.BARRIER, "&cClose", "&4Close the menu"), inTask(a -> a.getPlayer().closeInventory()));
-    private static final Element MENU = Element.of(createItem((ItemType) PixelmonItems.tradeMonitor, "&3Menu", "&9Return to the main menu"), inTask(a -> createMainMenu(a.getPlayer()).open(a.getPlayer())));
+    private static final Element MENU = Element.of(createItem((ItemType) PixelmonItems.tradeMonitor, "&bMenu", "&3Return to the main menu"), inTask(a -> createMainMenu(a.getPlayer()).open(a.getPlayer())));
     private static final Layout MAIN = Layout.builder()
             .set(DARK_BLUE, 0, 2, 4, 6, 8, 18, 20, 22, 24, 26)
             .set(LIGHT_BLUE, 1, 3, 5, 7, 9, 17, 19, 21, 23, 25)
@@ -94,7 +94,7 @@ public class Inventory {
             int slot = i;
             party[i] = createPokemonElement(player, storage.getList()[i], "Slot " + (i + 1), inTask(a -> createTradeMenu(player, slot).open(player)));
         }
-        party[6] = Element.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:pc").get(), "&3PC (Box " + (Utils.getPcStorage(player).lastBoxOpen + 1) + ")", "&3Click to view your PC"), inTask(a -> createPCMenu(player, -1).open(player)));
+        party[6] = Element.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:pc").get(), "&bPC (Box " + (Utils.getPcStorage(player).lastBoxOpen + 1) + ")", "&3Click to view your PC"), inTask(a -> createPCMenu(player, -1).open(player)));
         return createView(InventoryArchetypes.CHEST, "&3Wonder&9Trade", Layout.builder()
                 .from(MAIN)
                 .page(Arrays.asList(party))
@@ -131,7 +131,7 @@ public class Inventory {
                 return Element.of(item);
             }
         } else {
-            return Element.of(createItem(ItemTypes.BARRIER, "&cEmpty", "&4No Pokemon in " + name));
+            return Element.of(createItem(ItemTypes.BARRIER, "&cEmpty", "&4No Pokemon in " + name.toLowerCase()));
         }
     }
 
@@ -237,7 +237,7 @@ public class Inventory {
     }
 
     private static ItemStack createPokemonItem(String name, TradeEntry entry) {
-        String owner = entry.getOwner() == Utils.ZERO_UUID ? "Server" : Sponge.getServiceManager().provideUnchecked(UserStorageService.class).get(entry.getOwner()).map(User::getName).orElse(entry.getOwner().toString());
+        String owner = entry.getOwner().equals(Utils.ZERO_UUID) ? "Server" : Sponge.getServiceManager().provideUnchecked(UserStorageService.class).get(entry.getOwner()).map(User::getName).orElse(entry.getOwner().toString());
         return ItemStack.builder().fromContainer(createItem((ItemType) PixelmonItems.itemPixelmonSprite, name, Utils.getDesc(entry.getPokemon()) + "\nOwner: " + owner).toContainer()
                 .set(DataQuery.of("UnsafeData", "SpriteName"), getSpriteName(entry.getPokemon())))
                 .build();

@@ -28,9 +28,9 @@ public class Manager {
         return entry;
     }
 
-    public static void fillPool(boolean overwrite, boolean keepPlayers) {
+    public static void fillPool(boolean overwrite, boolean overwritePlayers) {
         for (int i = 0; i < trades.length; i++) {
-            if (trades[i] == null || overwrite && (!keepPlayers || trades[i].getOwner() == Utils.ZERO_UUID)) {
+            if (trades[i] == null || overwrite && (overwritePlayers || trades[i].getOwner().equals(Utils.ZERO_UUID))) {
                 trades[i] = new TradeEntry(genRandomPixelmon(), Utils.ZERO_UUID, LocalDateTime.now());
             }
         }

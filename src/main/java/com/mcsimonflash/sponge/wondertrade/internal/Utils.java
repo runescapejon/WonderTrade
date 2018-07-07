@@ -30,7 +30,6 @@ import org.spongepowered.api.text.translation.locale.Locales;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -121,18 +120,20 @@ public class Utils {
     public static void trade(Player player, int slot) {
         PlayerStorage storage = getPartyStorage(player);
         storage.recallAllPokemon();
-        TradeEntry entry = trade(player, storage.getList()[slot]);
+        NBTTagCompound nbt = storage.getList()[slot];
+        TradeEntry entry = trade(player, nbt);
         storage.removeFromPartyPlayer(slot);
-        Pixelmon.EVENT_BUS.post(new PixelmonDeletedEvent((EntityPlayerMP) player, storage.getList()[slot], DeleteType.COMMAND));
+        Pixelmon.EVENT_BUS.post(new PixelmonDeletedEvent((EntityPlayerMP) player, nbt, DeleteType.COMMAND));
         storage.addToParty(entry.getPokemon(), slot);
         Pixelmon.EVENT_BUS.post(new PixelmonReceivedEvent((EntityPlayerMP) player, ReceiveType.Command, entry.getPokemon()));
     }
 
     public static void trade(Player player, int box, int pos) {
         PlayerComputerStorage storage = getPcStorage(player);
-        TradeEntry entry = trade(player, storage.getBox(box).getNBTByPosition(pos));
+        NBTTagCompound nbt = storage.getBox(box).getNBTByPosition(pos);
+        TradeEntry entry = trade(player, nbt);
         storage.getBox(box).changePokemon(pos, entry.getPokemon().serializeNBT());
-        Pixelmon.EVENT_BUS.post(new PixelmonDeletedEvent((EntityPlayerMP) player, storage.getBox(box).getNBTByPosition(pos), DeleteType.COMMAND));
+        Pixelmon.EVENT_BUS.post(new PixelmonDeletedEvent((EntityPlayerMP) player, nbt, DeleteType.COMMAND));
         Pixelmon.EVENT_BUS.post(new PixelmonReceivedEvent((EntityPlayerMP) player, ReceiveType.Command, entry.getPokemon()));
     }
 

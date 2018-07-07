@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-@Plugin(id = "wondertrade", name = "WonderTrade", version = "1.0.0", dependencies = @Dependency(id = "pixelmon"), authors = "Simon_Flash")
+@Plugin(id = "wondertrade", name = "WonderTrade", version = "1.0.1", dependencies = @Dependency(id = "pixelmon"), authors = "Simon_Flash")
 public class WonderTrade {
 
     private static WonderTrade instance;

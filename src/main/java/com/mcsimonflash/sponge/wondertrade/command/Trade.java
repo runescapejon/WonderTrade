@@ -43,7 +43,7 @@ public class Trade extends Command {
             }
         }
         try {
-            Utils.trade((Player) src, slot - 1);
+            Utils.trade(player, slot - 1);
             return CommandResult.success();
         } catch (IllegalArgumentException e) {
             throw new CommandException(WonderTrade.getPrefix().concat(Utils.toText(e.getMessage())));

@@ -16,7 +16,7 @@ import org.spongepowered.api.entity.living.player.Player;
 
 @Aliases({"wondertrade", "wt"})
 @Permission("wondertrade.command.base")
-@Children({Pool.class, Take.class, Trade.class})
+@Children({Pool.class, Regen.class, Take.class, Trade.class})
 public class Base extends Command {
 
     @Inject
