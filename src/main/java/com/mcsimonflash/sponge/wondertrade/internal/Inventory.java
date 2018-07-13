@@ -142,27 +142,13 @@ public class Inventory {
 
     public static View createTradeMenu(Player player, int slot) {
         PlayerStorage storage = Utils.getPartyStorage(player);
-        return createTradeMenu(player, storage.getList()[slot], "&bSlot " + (slot + 1), inTask(a -> {
-            if (Config.resetCooldown(player.getUniqueId())) {
-                Utils.trade(player, slot);
-            } else {
-                player.sendMessage(WonderTrade.getMessage(player, "wondertrade.trade.reset-cooldown.failure"));
-                player.closeInventory();
-            }
-        }));
+        return createTradeMenu(player, storage.getList()[slot], "&bSlot " + (slot + 1), a -> Utils.trade(player, slot));
     }
 
     public static View createTradeMenu(Player player, int box, int pos) {
         PlayerComputerStorage storage = Utils.getPcStorage(player);
         storage.lastBoxOpen = box;
-        return createTradeMenu(player, storage.getBox(box).getNBTByPosition(pos), "Box " + (box + 1) + ", Position " + (pos + 1), inTask(a -> {
-            if (Config.resetCooldown(player.getUniqueId())) {
-                Utils.trade(player, box, pos);
-            } else {
-                player.sendMessage(WonderTrade.getMessage(player, "wondertrade.trade.reset-cooldown.failure"));
-                player.closeInventory();
-            }
-        }));
+        return createTradeMenu(player, storage.getBox(box).getNBTByPosition(pos), "Box " + (box + 1) + ", Position " + (pos + 1), a -> Utils.trade(player, box, pos));
     }
 
     public static View createTradeMenu(Player player, NBTTagCompound nbt, String name, Consumer<Action.Click> action) {
@@ -198,7 +184,7 @@ public class Inventory {
         } else {
             confirm = Element.of(createItem(ItemTypes.SLIME_BALL, "&aConfirm", "&2WonderTrade your " + Utils.getShortDesc(pokemon)), inTask(a -> {
                 action.accept(a);
-                inTask(i -> createMainMenu(player).open(player)).accept(a);
+                createMainMenu(player).open(player);
             }));
         }
         return view.define(Layout.builder()

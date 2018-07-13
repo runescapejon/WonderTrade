@@ -1,7 +1,7 @@
 package com.mcsimonflash.sponge.wondertrade.internal;
 
 import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
-import com.pixelmonmod.pixelmon.config.PixelmonEntityList;
+import com.pixelmonmod.pixelmon.api.pokemon.PokemonSpec;
 import com.pixelmonmod.pixelmon.entities.pixelmon.EntityPixelmon;
 import com.pixelmonmod.pixelmon.enums.EnumPokemon;
 
@@ -39,10 +39,10 @@ public class Manager {
 
     private static EntityPixelmon genRandomPixelmon() {
         EnumPokemon type = Config.legendRate != 0 && RANDOM.nextInt(Config.legendRate) == 0 ? EnumPokemon.LEGENDARY_ENUMS[RANDOM.nextInt(EnumPokemon.LEGENDARY_ENUMS.length)] : EnumPokemon.randomPoke(false);
-        EntityPixelmon pokemon = (EntityPixelmon) PixelmonEntityList.createEntityByName(type.name, Utils.getWorld());
-        pokemon.getLvl().setLevel(RANDOM.nextInt(Config.maxLvl - Config.minLvl) + Config.minLvl);
-        pokemon.setIsShiny(Config.shinyRate != 0 && RANDOM.nextInt(Config.shinyRate) == 0);
-        return pokemon;
+        PokemonSpec spec = PokemonSpec.from(type.name);
+        spec.level = RANDOM.nextInt(Config.maxLvl - Config.minLvl) + Config.minLvl;
+        spec.shiny = Config.shinyRate != 0 && RANDOM.nextInt(Config.shinyRate) == 0;
+        return spec.create(Utils.getWorld());
     }
 
 }

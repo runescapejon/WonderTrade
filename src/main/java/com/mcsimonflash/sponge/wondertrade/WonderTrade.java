@@ -5,6 +5,7 @@ import com.mcsimonflash.sponge.teslalibs.message.Message;
 import com.mcsimonflash.sponge.wondertrade.command.Base;
 import com.mcsimonflash.sponge.teslalibs.command.CommandService;
 import com.mcsimonflash.sponge.teslalibs.message.MessageService;
+import com.mcsimonflash.sponge.wondertrade.command.Menu;
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -21,7 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-@Plugin(id = "wondertrade", name = "WonderTrade", version = "1.0.1", dependencies = @Dependency(id = "pixelmon"), authors = "Simon_Flash")
+@Plugin(id = "wondertrade", name = "WonderTrade", version = "1.0.2", dependencies = @Dependency(id = "pixelmon"), authors = "Simon_Flash")
 public class WonderTrade {
 
     private static WonderTrade instance;
@@ -53,6 +54,7 @@ public class WonderTrade {
     @Listener
     public void onStart(GameStartingServerEvent event) {
         commands.register(Base.class);
+        Sponge.getCommandManager().register(container, commands.getInstance(Menu.class).getSpec(), "wt");
         Utils.initialize();
     }
 

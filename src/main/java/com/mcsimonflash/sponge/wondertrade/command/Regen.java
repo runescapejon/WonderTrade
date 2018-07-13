@@ -18,7 +18,8 @@ public class Regen extends Command {
 
     @Inject
     protected Regen(Settings settings) {
-        super(settings.elements(Arguments.booleanObj().optional().toElement("overwrite-players")));
+        super(settings.usage(CmdUtils.usage("/wondertrade regen ", "Regenerates the WonderTrade pool", CmdUtils.arg(false, "overwrite-players", "If true, Pokemon added by players will be replaced.")))
+                .elements(Arguments.booleanObj().optional().toElement("overwrite-players")));
     }
 
     @Override

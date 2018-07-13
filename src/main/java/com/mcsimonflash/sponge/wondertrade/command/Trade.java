@@ -21,9 +21,8 @@ public class Trade extends Command {
 
     @Inject
     protected Trade(Settings settings) {
-        super(settings.elements(
-                Arguments.player().orSource().toElement("player"),
-                Arguments.intObj().inRange(Range.closed(1, 6)).toElement("slot")));
+        super(settings.usage(CmdUtils.usage("/wondertrade trade ", "WonderTrade's a Pokemon", CmdUtils.arg(false, "player", "The player WonderTrading (defaults to the sender, if possible)"), CmdUtils.arg(true, "slot", "The slot of the Pokemon to WonderTrade (1-6)")))
+                .elements(Arguments.player().orSource().toElement("player"), Arguments.intObj().inRange(Range.closed(1, 6)).toElement("slot")));
     }
 
     @Override

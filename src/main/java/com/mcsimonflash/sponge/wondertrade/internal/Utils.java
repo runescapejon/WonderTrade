@@ -30,6 +30,7 @@ import org.spongepowered.api.text.translation.locale.Locales;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -43,7 +44,9 @@ public class Utils {
     public static final Pattern MESSAGE = Pattern.compile("\\[(.+?)]\\(((?:.|\n)+?)\\)");
 
     public static void initialize() {
-        if (task != null) task.cancel();
+        if (task != null) {
+            task.cancel();
+        }
         world = (net.minecraft.world.World) Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName())
                 .orElseThrow(() -> new IllegalStateException("No default world."));
         Config.load();
@@ -53,14 +56,25 @@ public class Utils {
                     .execute(t -> {
                         int shinies = 0, legendaries = 0;
                         for (TradeEntry entry : Manager.trades) {
-                            if (entry.getPokemon().getIsShiny()) shinies++;
-                            if (EnumPokemon.legendaries.contains(entry.getPokemon().getSpecies().name))
+                            if (entry.getPokemon().getIsShiny()) {
+                                shinies++;
+                            }
+                            if (EnumPokemon.legendaries.contains(entry.getPokemon().getSpecies().name)) {
                                 legendaries++;
+                            }
                         }
                         Sponge.getServer().getBroadcastChannel().send(WonderTrade.getMessage(Sponge.getServer().getConsole(), "wondertrade.announcement", "pool-size", Config.poolSize, "shinies", shinies, "legendaries", legendaries));
                     })
                     .interval(Config.announceInt, TimeUnit.MILLISECONDS)
                     .submit(WonderTrade.getContainer());
+        }
+    }
+
+    public static Optional<URL> parseURL(String url) {
+        try {
+            return Optional.of(new URL(url));
+        } catch (MalformedURLException ignored) {
+            return Optional.empty();
         }
     }
 
@@ -126,6 +140,7 @@ public class Utils {
         Pixelmon.EVENT_BUS.post(new PixelmonDeletedEvent((EntityPlayerMP) player, nbt, DeleteType.COMMAND));
         storage.addToParty(entry.getPokemon(), slot);
         Pixelmon.EVENT_BUS.post(new PixelmonReceivedEvent((EntityPlayerMP) player, ReceiveType.Command, entry.getPokemon()));
+        storage.sendUpdatedList();
     }
 
     public static void trade(Player player, int box, int pos) {
@@ -145,7 +160,7 @@ public class Utils {
         entry = Manager.trade(entry).refine(player);
         logTransaction(player, entry, false);
         Object[] args = new Object[] {"player", player.getName(), "traded", getShortDesc(pokemon), "traded-details", getDesc(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details", getDesc(entry.getPokemon())};
-        if (pokemon.getIsShiny() || EnumPokemon.legendaries.contains(pokemon.getSpecies().name)) {
+        if (Config.broadcastTrades && (pokemon.getIsShiny() || EnumPokemon.legendaries.contains(pokemon.getSpecies().name))) {
             Sponge.getServer().getBroadcastChannel().send(WonderTrade.getPrefix().concat(parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
         } else {
             player.sendMessage(WonderTrade.getPrefix().concat(parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
@@ -153,7 +168,7 @@ public class Utils {
         return entry;
     }
 
-   public static void take(Player player, int index) {
+    public static void take(Player player, int index) {
         PlayerStorage storage = getPartyStorage(player);
         storage.recallAllPokemon();
         TradeEntry entry = Manager.take(index).refine(player);
@@ -162,11 +177,11 @@ public class Utils {
     }
 
     public static void logTransaction(User user, TradeEntry entry, boolean add) {
-        WonderTrade.getLogger().info(user.getName() + (add ? " added " : " removed ") + " a " + getShortDesc(entry.getPokemon()) + ".");
+        WonderTrade.getLogger().info(user.getName() + (add ? " added " : " removed ") + " a " + getShortDesc(entry.getPokemon()) + (add ? "." : " (added by " + entry.getOwnerName() + ")."));
     }
 
     public static String getShortDesc(EntityPixelmon pokemon) {
-        return pokemon.isEgg ? "mysterious egg" : "level " + pokemon.getLvl().getLevel() + (pokemon.getIsShiny() ? " shiny " : " ") + pokemon.getSpecies().name;
+        return pokemon.isEgg ? "mysterious egg" : "level " + pokemon.getLvl().getLevel() + (pokemon.getIsShiny() ? " shiny " : " ") + (EnumPokemon.legendaries.contains(pokemon.getSpecies().name) ? "legendary " : "") + pokemon.getSpecies().name;
     }
 
     public static String getDesc(EntityPixelmon pokemon) {
