@@ -15,22 +15,22 @@ import org.spongepowered.api.command.args.CommandContext;
 @Aliases("regen")
 @Permission("wondertrade.command.regen.base")
 public class Regen extends Command {
-
-    @Inject
-    protected Regen(Settings settings) {
-        super(settings.usage(CmdUtils.usage("/wondertrade regen ", "Regenerates the WonderTrade pool", CmdUtils.arg(false, "overwrite-players", "If true, Pokemon added by players will be replaced.")))
-                .elements(Arguments.booleanObj().optional().toElement("overwrite-players")));
-    }
-
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        boolean overwritePlayers = args.<Boolean>getOne("overwrite-players").orElse(false);
-        if (overwritePlayers && !src.hasPermission("wondertrade.command.regen.overwrite-players")) {
-            throw new CommandException(WonderTrade.getMessage(src, "wondertrade.command.regen"));
-        }
-        Manager.fillPool(true, overwritePlayers);
-        src.sendMessage(WonderTrade.getMessage(src, "wondertrade.command.regen.success"));
-        return CommandResult.success();
-    }
-
+	
+	@Inject
+	protected Regen(Settings settings) {
+		super(settings.usage(CmdUtils.usage("/wondertrade regen ", "Regenerates the WonderTrade pool", CmdUtils.arg(false, "overwrite-players", "If true, Pokemon added by players will be replaced.")))
+				.elements(Arguments.booleanObj().optional().toElement("overwrite-players")));
+	}
+	
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+		boolean overwritePlayers = args.<Boolean>getOne("overwrite-players").orElse(false);
+		if (overwritePlayers && !src.hasPermission("wondertrade.command.regen.overwrite-players")) {
+			throw new CommandException(WonderTrade.getMessage(src, "wondertrade.command.regen"));
+		}
+		Manager.fillPool(true, overwritePlayers);
+		src.sendMessage(WonderTrade.getMessage(src, "wondertrade.command.regen.success"));
+		return CommandResult.success();
+	}
+	
 }

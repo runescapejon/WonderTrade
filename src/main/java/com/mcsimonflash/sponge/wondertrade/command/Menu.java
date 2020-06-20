@@ -14,17 +14,17 @@ import org.spongepowered.api.entity.living.player.Player;
 @Aliases("menu")
 @Permission("wondertrade.command.menu.base")
 public class Menu extends Command {
-
-    @Inject
-    protected Menu(Settings settings) {
-        super(settings.usage(CmdUtils.usage("/wondertrade menu", "Opens the WonderTrade menu")));
-    }
-
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Player player = CmdUtils.requirePlayer(src);
-        Inventory.createMainMenu(player).open(player);
-        return CommandResult.success();
-    }
-
+	
+	@Inject
+	protected Menu(Settings settings) {
+		super(settings.usage(CmdUtils.usage("/wondertrade menu", "Opens the WonderTrade menu")));
+	}
+	
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+		Player player = CmdUtils.requirePlayer(src);
+		Inventory.createMainMenu(player).open(player);
+		return CommandResult.success();
+	}
+	
 }
