@@ -22,10 +22,11 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 group 'com.mcsimonflash.sponge.wondertrade'
-version '1.1.2'
+version '1.1.3'
+
 ext.spongeversion = '7.1.0-SNAPSHOT'
-ext.teslaversion = '1.1.4'
-ext.pixelmonversion = '6.3.2'
+ext.teslaversion = '1.1.6'
+ext.pixelmonversion = '8.0.2'
 
 repositories {
     maven {

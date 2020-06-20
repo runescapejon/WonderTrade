@@ -118,6 +118,14 @@ public class Inventory {
 	
 	private static Element createPokemonElement(Player player, Pokemon pokemon, String name, Consumer<Action.Click> action) {
 		if (pokemon != null) {
+			if (Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable")) {
+				return Element.of(createPokemonItem("&b" + name, pokemon), action);
+			}
+			if (Config.allowuntradeable == false && pokemon.hasSpecFlag("untradeable")) {
+				ItemStack item = createPokemonItem("&b" + name, pokemon);
+				item.offer(Keys.ITEM_LORE, Lists.newArrayList(WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable").toText()));
+				return Element.of(item);
+			}
 			if (Config.allowEggs || !pokemon.isEgg()) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			} else {
@@ -125,6 +133,7 @@ public class Inventory {
 				item.offer(Keys.ITEM_LORE, Lists.newArrayList(WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs").toText()));
 				return Element.of(item);
 			}
+			
 		} else {
 			return Element.of(createItem(ItemTypes.BARRIER, "&cEmpty", "&4No Pokemon in " + name.toLowerCase()));
 		}

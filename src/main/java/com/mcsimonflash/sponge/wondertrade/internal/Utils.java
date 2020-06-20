@@ -131,6 +131,7 @@ public class Utils {
 	
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
 		Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(), WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs"));
+		Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"), WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable"));
 		TradeEntry entry = new TradeEntry(pokemon, player.getUniqueId(), LocalDateTime.now());
 		logTransaction(player, entry, true);
 		entry = Manager.trade(entry).refine(player);
@@ -143,6 +144,7 @@ public class Utils {
 		}
 		return entry;
 	}
+		
 	
 	public static void take(Player player, int index) {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
