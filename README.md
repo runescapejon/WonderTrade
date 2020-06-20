@@ -3,6 +3,7 @@
 
 # New feature
 - Support for Custom Texture
+- Support for untradeable spec and a configuration option for it.
 - Support for Pixelmon Reforged 8.0.2+
  # bug ?
 If you found a bug please put as much information as possible over at the issues page which can be found here 
