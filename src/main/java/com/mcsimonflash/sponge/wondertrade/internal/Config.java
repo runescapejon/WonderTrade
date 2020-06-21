@@ -31,7 +31,7 @@ public class Config {
 	
 	public static void load() {
 		try {
-			config = getLoader(DIRECTORY, "wondertrade.conf", true);
+			config = getLoader(DIRECTORY, "wondertradeplus.conf", true);
 			cooldowns = getLoader(STORAGE, "cooldowns.conf", false);
 			trades = getLoader(STORAGE, "trades.conf", false);
 			allowEggs = config.getNode("allow-eggs").getBoolean(true);

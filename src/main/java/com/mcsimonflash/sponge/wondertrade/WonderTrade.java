@@ -4,6 +4,9 @@ import com.google.inject.Inject;
 import com.mcsimonflash.sponge.wondertrade.command.Base;
 import com.mcsimonflash.sponge.wondertrade.command.Menu;
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
+
+import net.minecraftforge.fml.common.Loader;
+
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
@@ -19,7 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-@Plugin(id = "wondertrade", name = "WonderTrade", version = "1.1.4", description = "Lets you do spicy thing with ur beloved pokÃ©mon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {"Simon_Flash", "happyzleaf", "runescapejon"})
+@Plugin(id = "wondertradeplus", name = "WonderTradePlus", version = "1.1.4", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {"Simon_Flash", "happyzleaf", "runescapejon"})
 public class WonderTrade {
 	
 	private static WonderTrade instance;
@@ -81,6 +84,7 @@ public class WonderTrade {
 		commands.register(Base.class);
 		Sponge.getCommandManager().register(container, commands.getInstance(Menu.class).getSpec(), "wt");
 		Utils.initialize();
+	 
 	}
 	
 	@Listener
