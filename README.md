@@ -2,6 +2,9 @@
  Check here for more information https://ore.spongepowered.org/Simon_Flash/WonderTrade
 
 # New feature
+- Added the feature to fully customize the GUI to fit your server needs. 
+- Added the ability to dis-allow hidden ability pokemon from being wondertrade.
+- Support Ultra Beasts
 - Support for Custom Texture
 - Support for untradeable spec and a configuration option for it.
 - Support for Pixelmon Reforged 8.0.2+
