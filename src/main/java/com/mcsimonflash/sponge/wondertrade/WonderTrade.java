@@ -11,6 +11,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
@@ -22,7 +23,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.5", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.6", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
 		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
 
@@ -90,6 +91,7 @@ public class WonderTrade {
 		Utils.initialize();
 
 	}
+ 
 
 	@Listener
 	public void onReload(GameReloadEvent event) {

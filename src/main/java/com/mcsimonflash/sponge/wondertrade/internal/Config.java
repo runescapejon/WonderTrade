@@ -25,10 +25,10 @@ import java.util.UUID;
 public class Config {
 	
 	private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
-	public static boolean allowEggs, allowuntradeable, broadcastTrades, regenOnRestart, regenOverwritePlayers;
-	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt;
+	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart, regenOverwritePlayers;
+	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
-	public static String prefix;
+	public static String prefix, GUIitem1, GUIItem2;
 	private static ConfigHolder config, cooldowns, trades;
 	
 	public static void load() {
@@ -38,6 +38,7 @@ public class Config {
 			trades = getLoader(STORAGE, "trades.conf", false);
 			allowEggs = config.getNode("allow-eggs").getBoolean(true);
 			allowuntradeable = config.getNode("allow-untradeable").getBoolean(true);
+			HiddenAbility = config.getNode("allow-HiddenAbility").getBoolean(true);
 			broadcastTrades = config.getNode("broadcast-trades").getBoolean(true);
 			regenOnRestart = config.getNode("regen-on-restart").getBoolean(false);
 			regenOverwritePlayers = config.getNode("regen-overwrite-players").getBoolean(false);
@@ -47,7 +48,11 @@ public class Config {
 			maxLvl = config.getNode("max-level").getInt(95);
 			shinyRate = config.getNode("shiny-rate").getInt(1365);
 			legendRate = config.getNode("legendary-rate").getInt(8192);
-			prefix = config.getNode("prefix").getString("&3Wondfdfdder&9Trade&8: &7");
+			prefix = config.getNode("prefix").getString("&8[&3Wonder&9Trade&8] &7");
+			GUIitem1 = config.getNode("GUIitem1").getString("minecraft:stained_glass_pane");
+			GUIDamage1 = config.getNode("GUIDamage1").getInt(11);
+			GUIItem2 = config.getNode("GUIitem2").getString("minecraft:stained_glass_pane");
+			GUIDamage2 = config.getNode("GUIDamage2").getInt(3);
 			announceInt = config.getNode("announcement-interval").getInt(600000);
 			boolean startup = Manager.trades == null;
 			Manager.trades = new TradeEntry[poolSize];

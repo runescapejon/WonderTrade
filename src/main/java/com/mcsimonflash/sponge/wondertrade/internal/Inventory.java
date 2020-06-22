@@ -12,7 +12,11 @@ import com.pixelmonmod.pixelmon.config.PixelmonItems;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import com.pixelmonmod.pixelmon.enums.forms.EnumSpecial;
 import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
+
+ 
+
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.DyeColors;
@@ -35,13 +39,17 @@ import java.util.function.Consumer;
 
 public class Inventory {
 	
-	private static final Element LIGHT_BLUE = Element.of(ItemStack.builder()
-			.itemType(ItemTypes.STAINED_GLASS_PANE)
-			.add(Keys.DYE_COLOR, DyeColors.LIGHT_BLUE)
+	//this way it can be supportive to mods items, by using DataContainer. An fully customized. 
+	static DataContainer DataContainer1 = DataContainer.createNew().set(DataQuery.of("ItemType"), Config.GUIitem1)
+			.set(DataQuery.of("Count"), 1).set(DataQuery.of("UnsafeDamage"), Config.GUIDamage1);
+	
+	static DataContainer DataContainer2 = DataContainer.createNew().set(DataQuery.of("ItemType"), Config.GUIItem2)
+			.set(DataQuery.of("Count"), 1).set(DataQuery.of("UnsafeDamage"), Config.GUIDamage2);
+	
+	
+	private static final Element LIGHT_BLUE = Element.of(ItemStack.builder().fromContainer(DataContainer1)
 			.build());
-	private static final Element DARK_BLUE = Element.of(ItemStack.builder()
-			.itemType(ItemTypes.STAINED_GLASS_PANE)
-			.add(Keys.DYE_COLOR, DyeColors.BLUE)
+	private static final Element DARK_BLUE = Element.of(ItemStack.builder().fromContainer(DataContainer2)
 			.build());
 	private static final Element CLOSE = Element.of(createItem(ItemTypes.BARRIER, "&cClose", "&4Close the menu"), inTask(a -> a.getPlayer().closeInventory()));
 	private static final Layout MAIN = Layout.builder()
@@ -91,7 +99,7 @@ public class Inventory {
 			elements[i] = createPokemonElement(player, party[i], "Slot " + (i + 1), inTask(a -> createTradeMenu(player, slot).open(player)));
 		}
 		elements[6] = Element.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:pc").get(), "&bPC (Box " + (Pixelmon.storageManager.getPCForPlayer(player.getUniqueId()).getLastBox() + 1) + ")", "&3Click to view your PC"), inTask(a -> createPCMenu(player, -1).open(player)));
-		return createView(InventoryArchetypes.CHEST, "&3Wonder&9Trade", Layout.builder()
+		return createView(InventoryArchetypes.CHEST, Config.prefix, Layout.builder()
 				.from(MAIN)
 				.page(Arrays.asList(elements))
 				.build());
@@ -118,6 +126,16 @@ public class Inventory {
 	
 	private static Element createPokemonElement(Player player, Pokemon pokemon, String name, Consumer<Action.Click> action) {
 		if (pokemon != null) {
+			if (Config.HiddenAbility ||  pokemon.getAbilitySlot() != 2) {
+				return Element.of(createPokemonItem("&b" + name, pokemon), action);
+			}
+			else {
+				if (Config.HiddenAbility == false && pokemon.getAbilitySlot() == 2) {
+					ItemStack item = createPokemonItem("&b" + name, pokemon);
+					item.offer(Keys.ITEM_LORE, Lists.newArrayList(WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-hiddenability").toText()));
+					return Element.of(item);
+			}
+		}
 			if (Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable")) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}
@@ -246,7 +264,9 @@ public class Inventory {
 					+ (species == EnumSpecies.Togepi ? "togepi" : species == EnumSpecies.Manaphy ? "manaphy" : "egg")
 					+ (cycles > 10 ? "1" : cycles > 5 ? "2" : "3");
 		} else {
-			return "pixelmon:" + GuiResources.getSpritePath(pokemon.getSpecies(), pokemon.getForm(), pokemon.getGender(), pokemon.getFormEnum() != EnumSpecial.Base, pokemon.isShiny());
+			//return "pixelmon:" + GuiResources.getSpritePath(pokemon.getSpecies(), pokemon.getForm(), pokemon.getGender(), pokemon.getFormEnum() != EnumSpecial.Base, pokemon.isShiny());
+			//from within testing it seem that this part here ain't deprecated and i above i had completely forgot to add support for custom textures..
+			return "pixelmon:" + GuiResources.getSpritePath(pokemon.getSpecies(), pokemon.getForm(), pokemon.getGender(), pokemon.getCustomTexture(), pokemon.isShiny());
 		}
 	}
 }
