@@ -3,9 +3,8 @@ package com.mcsimonflash.sponge.wondertrade;
 import com.google.inject.Inject;
 import com.mcsimonflash.sponge.wondertrade.command.Base;
 import com.mcsimonflash.sponge.wondertrade.command.Menu;
+import com.mcsimonflash.sponge.wondertrade.internal.Config;
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
-
-import net.minecraftforge.fml.common.Loader;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -17,14 +16,17 @@ import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-@Plugin(id = "wondertradeplus", name = "WonderTradePlus", version = "1.1.4", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {"Simon_Flash", "happyzleaf", "runescapejon"})
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.5", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
-	
+
+	public static final String PluginID = "wondertradeplus";
 	private static WonderTrade instance;
 	private static PluginContainer container;
 	private static Logger logger;
@@ -32,7 +34,7 @@ public class WonderTrade {
 	private static Path directory;
 	private static com.mcsimonflash.sponge.teslalibs.message.MessageService messages;
 	private static Text prefix;
-	
+
 	@Inject
 	public WonderTrade(PluginContainer c) {
 		instance = this;
@@ -48,49 +50,51 @@ public class WonderTrade {
 			logger.error("An error occurred initializing message translations. Using internal copies.");
 			messages = com.mcsimonflash.sponge.teslalibs.message.MessageService.of(container, "messages");
 		}
-		prefix = Utils.toText("&3Wonder&9Trade&8: &7");
+
 	}
-	
+
 	public static WonderTrade getInstance() {
 		return instance;
 	}
-	
+
 	public static PluginContainer getContainer() {
 		return container;
 	}
-	
+
 	public static Logger getLogger() {
 		return logger;
 	}
-	
+
 	public static Path getDirectory() {
 		return directory;
 	}
-	
+
 	public static Text getPrefix() {
 		return prefix;
 	}
-	
-	public static com.mcsimonflash.sponge.teslalibs.message.Message getMessage(Locale locale, String key, Object... args) {
+
+	public static com.mcsimonflash.sponge.teslalibs.message.Message getMessage(Locale locale, String key,
+			Object... args) {
 		return messages.get(key, locale).args(args);
 	}
-	
+
 	public static Text getMessage(CommandSource src, String key, Object... args) {
-		return prefix.concat(getMessage(src.getLocale(), key, args).toText());
+		return Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix),
+				getMessage(src.getLocale(), key, args).toText());
 	}
-	
+
 	@Listener
 	public void onStart(GameStartingServerEvent event) {
 		commands.register(Base.class);
 		Sponge.getCommandManager().register(container, commands.getInstance(Menu.class).getSpec(), "wt");
 		Utils.initialize();
-	 
+
 	}
-	
+
 	@Listener
 	public void onReload(GameReloadEvent event) {
 		messages.reload();
 		Utils.initialize();
 	}
-	
+
 }

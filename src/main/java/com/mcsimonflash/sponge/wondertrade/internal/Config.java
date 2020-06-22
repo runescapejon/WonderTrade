@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
+ 
 
 public class Config {
 	
@@ -27,6 +28,7 @@ public class Config {
 	public static boolean allowEggs, allowuntradeable, broadcastTrades, regenOnRestart, regenOverwritePlayers;
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt;
 	public static long defCooldown;
+	public static String prefix;
 	private static ConfigHolder config, cooldowns, trades;
 	
 	public static void load() {
@@ -45,6 +47,7 @@ public class Config {
 			maxLvl = config.getNode("max-level").getInt(95);
 			shinyRate = config.getNode("shiny-rate").getInt(1365);
 			legendRate = config.getNode("legendary-rate").getInt(8192);
+			prefix = config.getNode("prefix").getString("&3Wondfdfdder&9Trade&8: &7");
 			announceInt = config.getNode("announcement-interval").getInt(600000);
 			boolean startup = Manager.trades == null;
 			Manager.trades = new TradeEntry[poolSize];

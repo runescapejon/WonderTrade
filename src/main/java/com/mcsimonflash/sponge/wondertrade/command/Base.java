@@ -6,6 +6,7 @@ import com.mcsimonflash.sponge.teslalibs.command.Children;
 import com.mcsimonflash.sponge.teslalibs.command.Command;
 import com.mcsimonflash.sponge.teslalibs.command.Permission;
 import com.mcsimonflash.sponge.wondertrade.WonderTrade;
+import com.mcsimonflash.sponge.wondertrade.internal.Config;
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -13,6 +14,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +34,7 @@ public class Base extends Command {
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) {
 		PaginationList.builder()
-				.title(WonderTrade.getPrefix())
+				.title(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix)))
 				.padding(Utils.toText("&7="))
 				.contents(Stream.concat(Stream.of(getUsage()), ((Command) this).getChildren().stream().filter(c -> c.getSpec().testPermission(src)).map(Command::getUsage)).collect(Collectors.toList()))
 				.footer(LINKS)

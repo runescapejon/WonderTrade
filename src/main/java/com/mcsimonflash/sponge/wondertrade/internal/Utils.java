@@ -43,7 +43,7 @@ public class Utils {
 		if (Config.announceInt > 0) {
 			task = Task.builder()
 					.execute(t -> {
-						int shinies = 0, legendaries = 0;
+						int shinies = 0, legendaries = 0, ultrabeasts =0;
 						for (TradeEntry entry : Manager.trades) {
 							if (entry.getPokemon().isShiny()) {
 								shinies++;
@@ -51,8 +51,11 @@ public class Utils {
 							if (EnumSpecies.legendaries.contains(entry.getPokemon().getSpecies().name)) {
 								legendaries++;
 							}
+							if (EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name)) {
+								ultrabeasts++;
+							}
 						}
-						Sponge.getServer().getBroadcastChannel().send(WonderTrade.getMessage(Sponge.getServer().getConsole(), "wondertrade.announcement", "pool-size", Config.poolSize, "shinies", shinies, "legendaries", legendaries));
+						Sponge.getServer().getBroadcastChannel().send(WonderTrade.getMessage(Sponge.getServer().getConsole(), "wondertrade.announcement", "pool-size", Config.poolSize, "shinies", shinies, "legendaries", legendaries, "ultrabeasts", ultrabeasts));
 					})
 					.interval(Config.announceInt, TimeUnit.MILLISECONDS)
 					.submit(WonderTrade.getContainer());
@@ -136,11 +139,12 @@ public class Utils {
 		logTransaction(player, entry, true);
 		entry = Manager.trade(entry).refine(player);
 		logTransaction(player, entry, false);
+		entry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
 		Object[] args = new Object[]{"player", player.getName(), "traded", getShortDesc(pokemon), "traded-details", getDesc(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details", getDesc(entry.getPokemon())};
 		if (Config.broadcastTrades && (pokemon.isShiny() || EnumSpecies.legendaries.contains(pokemon.getSpecies().name))) {
-			Sponge.getServer().getBroadcastChannel().send(WonderTrade.getPrefix().concat(parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
+			Sponge.getServer().getBroadcastChannel().send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix),parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
 		} else {
-			player.sendMessage(WonderTrade.getPrefix().concat(parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
+			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
 		}
 		return entry;
 	}
@@ -150,6 +154,7 @@ public class Utils {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
 		recallAllPokemon(party);
 		TradeEntry entry = Manager.take(index).refine(player);
+		 
 		logTransaction(player, entry, false);
 		party.add(entry.getPokemon());
 	}
