@@ -134,7 +134,7 @@ public class Config {
 		return new TradeEntry(pokemon, owner, date);
 	}
 
-	public String getEntityParticlesID(Pokemon p) {
+	public static String getEntityParticlesID(Pokemon p) {
 		NBTTagCompound data = p.getPersistentData();
 		if (data.hasKey("entity-particles:particle")) {
 			return data.getString("entity-particles:particle");
