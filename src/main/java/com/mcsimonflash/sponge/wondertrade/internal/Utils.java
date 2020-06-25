@@ -183,29 +183,37 @@ public class Utils {
 
 	public static String getDesc(Pokemon pokemon) {
 		if (pokemon.isEgg()) {
-			return "&3Pokemon: &9???";
+			return WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.egg.lore").toString();
 		}
-		StringBuilder builder = new StringBuilder("&3Pokemon: &9").append(pokemon.getSpecies().name);
+		StringBuilder builder = new StringBuilder(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pokemon.lore").toString()).append(pokemon.getSpecies().name);
 		if (pokemon.getHeldItem() != ItemStack.EMPTY) {
 			builder.append("\n&3Held Item: &9").append(pokemon.getHeldItem().getUnlocalizedName());
 		}
-		builder.append("\n&3Ability: &9").append(pokemon.getAbility().getName()).append("\n&3Level: &9")
-				.append(pokemon.getLevel()).append("\n&3Shiny: &9").append(pokemon.isShiny()).append("\n&3Form: &9")
-				.append(pokemon.getFormEnum()).append("\n&3EVs: &9").append(pokemon.getStats().evs.hp).append("&3/&9")
-				.append(pokemon.getStats().evs.attack).append("&3/&9").append(pokemon.getStats().evs.defence)
-				.append("&3/&9").append(pokemon.getStats().evs.specialAttack).append("&3/&9")
-				.append(pokemon.getStats().evs.specialDefence).append("&3/&9").append(pokemon.getStats().evs.speed)
-				.append("\n&3IVs: &9").append(pokemon.getStats().ivs.hp).append("&3/&9")
-				.append(pokemon.getStats().ivs.attack).append("&3/&9").append(pokemon.getStats().ivs.defence)
-				.append("&3/&9").append(pokemon.getStats().ivs.specialAttack).append("&3/&9")
-				.append(pokemon.getStats().ivs.specialDefence).append("&3/&9").append(pokemon.getStats().ivs.speed);
+		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ability.lore")).append(pokemon.getAbility().getName())
+		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore")).append(pokemon.getLevel())
+		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore")).append(pokemon.isShiny())
+		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")).append(pokemon.getFormEnum())
+		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.lore"))
+		.append(pokemon.getStats().evs.hp).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore"))
+				.append(pokemon.getStats().evs.attack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.attack.lore"))
+				.append(pokemon.getStats().evs.defence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.defence.lore"))
+				.append(pokemon.getStats().evs.specialAttack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
+				.append(pokemon.getStats().evs.specialDefence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
+				.append(pokemon.getStats().evs.speed)
+				.append("\n&3IVs: &9")
+				.append(pokemon.getStats().ivs.hp).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore"))
+				.append(pokemon.getStats().ivs.attack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.attack.lore"))
+				.append(pokemon.getStats().ivs.defence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.defence.lore"))
+				.append(pokemon.getStats().ivs.specialAttack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore"))
+				.append(pokemon.getStats().ivs.specialDefence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
+				.append(pokemon.getStats().ivs.speed);
 		if (!pokemon.getCustomTexture().isEmpty()) {
-			builder.append("\n&3Custom Texture: &9").append(pokemon.getCustomTexture());
+			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore")).append(pokemon.getCustomTexture());
 		}
 
 		if (Config.EnableEntityParticle) {
 			if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
-				builder.append("\n&3Aura: &9")
+				builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore"))
 						.append(pokemon.getPersistentData().getString("entity-particles:particle"));
 			}
 
