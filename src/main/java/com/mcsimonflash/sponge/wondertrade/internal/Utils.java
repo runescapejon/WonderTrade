@@ -33,7 +33,7 @@ public class Utils {
 	public static final UUID ZERO_UUID = new UUID(0, 0);
 	public static final Pattern MESSAGE = Pattern.compile("\\[(.+?)]\\(((?:.|\n)+?)\\)");
 	private static Task task;
-	
+
 	public static void initialize() {
 		if (task != null) {
 			task.cancel();
@@ -41,27 +41,27 @@ public class Utils {
 		Config.load();
 		Manager.fillPool(false, true);
 		if (Config.announceInt > 0) {
-			task = Task.builder()
-					.execute(t -> {
-						int shinies = 0, legendaries = 0, ultrabeasts =0;
-						for (TradeEntry entry : Manager.trades) {
-							if (entry.getPokemon().isShiny()) {
-								shinies++;
-							}
-							if (EnumSpecies.legendaries.contains(entry.getPokemon().getSpecies().name)) {
-								legendaries++;
-							}
-							if (EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name)) {
-								ultrabeasts++;
-							}
-						}
-						Sponge.getServer().getBroadcastChannel().send(WonderTrade.getMessage(Sponge.getServer().getConsole(), "wondertrade.announcement", "pool-size", Config.poolSize, "shinies", shinies, "legendaries", legendaries, "ultrabeasts", ultrabeasts));
-					})
-					.interval(Config.announceInt, TimeUnit.MILLISECONDS)
-					.submit(WonderTrade.getContainer());
+			task = Task.builder().execute(t -> {
+				int shinies = 0, legendaries = 0, ultrabeasts = 0;
+				for (TradeEntry entry : Manager.trades) {
+					if (entry.getPokemon().isShiny()) {
+						shinies++;
+					}
+					if (EnumSpecies.legendaries.contains(entry.getPokemon().getSpecies().name)) {
+						legendaries++;
+					}
+					if (EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name)) {
+						ultrabeasts++;
+					}
+				}
+				Sponge.getServer().getBroadcastChannel()
+						.send(WonderTrade.getMessage(Sponge.getServer().getConsole(), "wondertrade.announcement",
+								"pool-size", Config.poolSize, "shinies", shinies, "legendaries", legendaries,
+								"ultrabeasts", ultrabeasts));
+			}).interval(Config.announceInt, TimeUnit.MILLISECONDS).submit(WonderTrade.getContainer());
 		}
 	}
-	
+
 	public static Optional<URL> parseURL(String url) {
 		try {
 			return Optional.of(new URL(url));
@@ -69,11 +69,11 @@ public class Utils {
 			return Optional.empty();
 		}
 	}
-	
+
 	public static Text toText(String msg) {
 		return TextSerializers.FORMATTING_CODE.deserialize(msg);
 	}
-	
+
 	public static Text parseText(String message) {
 		Matcher matcher = MESSAGE.matcher(message);
 		Text.Builder builder = Text.builder();
@@ -85,7 +85,8 @@ public class Utils {
 			Text.Builder subtext = toText(matcher.group(1)).toBuilder();
 			String group = matcher.group(2);
 			try {
-				subtext.onClick(group.startsWith("/") ? TextActions.runCommand(group) : TextActions.openUrl(new URL(group)));
+				subtext.onClick(
+						group.startsWith("/") ? TextActions.runCommand(group) : TextActions.openUrl(new URL(group)));
 				subtext.onHover(TextActions.showText(Text.of(group)));
 			} catch (MalformedURLException e) {
 				subtext.onHover(TextActions.showText(toText(group)));
@@ -101,16 +102,18 @@ public class Utils {
 		}
 		return builder.toText();
 	}
-	
+
 	public static long getCooldown(Player player) {
 		try {
-			return Integer.parseInt(player.getOption("wondertrade:cooldown").orElse(String.valueOf(Config.defCooldown)));
+			return Integer
+					.parseInt(player.getOption("wondertrade:cooldown").orElse(String.valueOf(Config.defCooldown)));
 		} catch (NumberFormatException e) {
-			WonderTrade.getLogger().error("Malformatted cooldown option set for player " + player.getName() + ": " + player.getOption("wondertrade:cooldown").orElse(""));
+			WonderTrade.getLogger().error("Malformatted cooldown option set for player " + player.getName() + ": "
+					+ player.getOption("wondertrade:cooldown").orElse(""));
 			return Config.defCooldown;
 		}
 	}
-	
+
 	public static void recallAllPokemon(PartyStorage storage) {
 		for (Pokemon p : storage.getAll()) {
 			if (p != null) {
@@ -118,55 +121,66 @@ public class Utils {
 			}
 		}
 	}
-	
+
 	public static void trade(Player player, int slot) {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
 		recallAllPokemon(party);
 		TradeEntry entry = trade(player, party.getAll()[slot]);
 		party.set(slot, entry.getPokemon());
 	}
-	
+
 	public static void trade(Player player, int box, int pos) {
 		PCStorage pc = Pixelmon.storageManager.getPCForPlayer(player.getUniqueId());
 		TradeEntry entry = trade(player, pc.get(box, pos));
 		pc.set(box, pos, entry.getPokemon());
 	}
-	
+
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
-		Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(), WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs"));
-		Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"), WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable"));
+		Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(),
+				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs"));
+		Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"),
+				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable"));
 		TradeEntry entry = new TradeEntry(pokemon, player.getUniqueId(), LocalDateTime.now());
 		logTransaction(player, entry, true);
 		entry = Manager.trade(entry).refine(player);
 		logTransaction(player, entry, false);
 		entry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
-		Object[] args = new Object[]{"player", player.getName(), "traded", getShortDesc(pokemon), "traded-details", getDesc(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details", getDesc(entry.getPokemon())};
-		if (Config.broadcastTrades && (pokemon.isShiny() || EnumSpecies.legendaries.contains(pokemon.getSpecies().name))) {
-			Sponge.getServer().getBroadcastChannel().send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix),parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
+		Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
+				getDesc(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
+				getDesc(entry.getPokemon()) };
+		if (Config.broadcastTrades
+				&& (pokemon.isShiny() || EnumSpecies.legendaries.contains(pokemon.getSpecies().name))) {
+			Sponge.getServer().getBroadcastChannel()
+					.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
+							.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
 		} else {
-			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
+			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
 		}
 		return entry;
 	}
-		
-	
+
 	public static void take(Player player, int index) {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
 		recallAllPokemon(party);
 		TradeEntry entry = Manager.take(index).refine(player);
-		 
+
 		logTransaction(player, entry, false);
 		party.add(entry.getPokemon());
 	}
-	
+
 	public static void logTransaction(User user, TradeEntry entry, boolean add) {
-		WonderTrade.getLogger().info(user.getName() + (add ? " added " : " removed ") + " a " + getShortDesc(entry.getPokemon()) + (add ? "." : " (added by " + entry.getOwnerName() + ")."));
+		WonderTrade.getLogger().info(user.getName() + (add ? " added " : " removed ") + " a "
+				+ getShortDesc(entry.getPokemon()) + (add ? "." : " (added by " + entry.getOwnerName() + ")."));
 	}
-	
+
 	public static String getShortDesc(Pokemon pokemon) {
-		return pokemon.isEgg() ? "mysterious egg" : "level " + pokemon.getLevel() + (pokemon.isShiny() ? " shiny " : " ") + (EnumSpecies.legendaries.contains(pokemon.getSpecies().name) ? "legendary " : "") + pokemon.getSpecies().name;
+		return pokemon.isEgg() ? "mysterious egg"
+				: "level " + pokemon.getLevel() + (pokemon.isShiny() ? " shiny " : " ")
+						+ (EnumSpecies.legendaries.contains(pokemon.getSpecies().name) ? "legendary " : "")
+						+ pokemon.getSpecies().name;
 	}
-	
+
 	public static String getDesc(Pokemon pokemon) {
 		if (pokemon.isEgg()) {
 			return "&3Pokemon: &9???";
@@ -175,25 +189,28 @@ public class Utils {
 		if (pokemon.getHeldItem() != ItemStack.EMPTY) {
 			builder.append("\n&3Held Item: &9").append(pokemon.getHeldItem().getUnlocalizedName());
 		}
-		builder.append("\n&3Ability: &9").append(pokemon.getAbility().getName())
-				.append("\n&3Level: &9").append(pokemon.getLevel())
-				.append("\n&3Shiny: &9").append(pokemon.isShiny())
-				.append("\n&3Custom Texture: &9").append(pokemon.getCustomTexture())
-				.append("\n&3Form: &9").append(pokemon.getFormEnum())
-				.append("\n&3EVs: &9")
-				.append(pokemon.getStats().evs.hp).append("&3/&9")
-				.append(pokemon.getStats().evs.attack).append("&3/&9")
-				.append(pokemon.getStats().evs.defence).append("&3/&9")
-				.append(pokemon.getStats().evs.specialAttack).append("&3/&9")
-				.append(pokemon.getStats().evs.specialDefence).append("&3/&9")
-				.append(pokemon.getStats().evs.speed)
-				.append("\n&3IVs: &9")
-				.append(pokemon.getStats().ivs.hp).append("&3/&9")
-				.append(pokemon.getStats().ivs.attack).append("&3/&9")
-				.append(pokemon.getStats().ivs.defence).append("&3/&9")
-				.append(pokemon.getStats().ivs.specialAttack).append("&3/&9")
-				.append(pokemon.getStats().ivs.specialDefence).append("&3/&9")
-				.append(pokemon.getStats().ivs.speed);
+		builder.append("\n&3Ability: &9").append(pokemon.getAbility().getName()).append("\n&3Level: &9")
+				.append(pokemon.getLevel()).append("\n&3Shiny: &9").append(pokemon.isShiny()).append("\n&3Form: &9")
+				.append(pokemon.getFormEnum()).append("\n&3EVs: &9").append(pokemon.getStats().evs.hp).append("&3/&9")
+				.append(pokemon.getStats().evs.attack).append("&3/&9").append(pokemon.getStats().evs.defence)
+				.append("&3/&9").append(pokemon.getStats().evs.specialAttack).append("&3/&9")
+				.append(pokemon.getStats().evs.specialDefence).append("&3/&9").append(pokemon.getStats().evs.speed)
+				.append("\n&3IVs: &9").append(pokemon.getStats().ivs.hp).append("&3/&9")
+				.append(pokemon.getStats().ivs.attack).append("&3/&9").append(pokemon.getStats().ivs.defence)
+				.append("&3/&9").append(pokemon.getStats().ivs.specialAttack).append("&3/&9")
+				.append(pokemon.getStats().ivs.specialDefence).append("&3/&9").append(pokemon.getStats().ivs.speed);
+		if (!pokemon.getCustomTexture().isEmpty()) {
+			builder.append("\n&3Custom Texture: &9").append(pokemon.getCustomTexture());
+		}
+
+		if (Config.EnableEntityParticle) {
+			if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
+				builder.append("\n&3Aura: &9")
+						.append(pokemon.getPersistentData().getString("entity-particles:particle"));
+			}
+
+		}
+
 		return builder.toString();
 	}
 }

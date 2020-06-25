@@ -6,6 +6,8 @@ import com.mcsimonflash.sponge.wondertrade.command.Menu;
 import com.mcsimonflash.sponge.wondertrade.internal.Config;
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
 
+import net.minecraftforge.fml.common.Loader;
+
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;

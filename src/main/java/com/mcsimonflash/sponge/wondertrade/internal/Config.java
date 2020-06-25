@@ -10,6 +10,8 @@ import com.pixelmonmod.pixelmon.enums.EnumGrowth;
 import com.pixelmonmod.pixelmon.enums.EnumNature;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import com.pixelmonmod.pixelmon.enums.items.EnumPokeballs;
+
+import net.minecraft.nbt.NBTTagCompound;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 
@@ -20,22 +22,23 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
- 
 
 public class Config {
-	
+
 	private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
-	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart, regenOverwritePlayers;
+	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart,
+			regenOverwritePlayers, EnableEntityParticle;
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
 	public static String prefix, GUIitem1, GUIItem2;
 	private static ConfigHolder config, cooldowns, trades;
-	
+
 	public static void load() {
 		try {
 			config = getLoader(DIRECTORY, "wondertradeplus.conf", true);
 			cooldowns = getLoader(STORAGE, "cooldowns.conf", false);
 			trades = getLoader(STORAGE, "trades.conf", false);
+			EnableEntityParticle = config.getNode("Enable-EntityParticle").getBoolean(false);
 			allowEggs = config.getNode("allow-eggs").getBoolean(true);
 			allowuntradeable = config.getNode("allow-untradeable").getBoolean(true);
 			HiddenAbility = config.getNode("allow-HiddenAbility").getBoolean(true);
@@ -65,7 +68,7 @@ public class Config {
 			WonderTrade.getLogger().error("Error loading config: " + e.getMessage());
 		}
 	}
-	
+
 	private static ConfigHolder getLoader(Path dir, String name, boolean asset) throws IOException {
 		try {
 			Path path = dir.resolve(name);
@@ -83,30 +86,32 @@ public class Config {
 			throw e;
 		}
 	}
-	
+
 	public static boolean saveTrade(int index) {
 		serializeTrade(Manager.trades[index], trades.getNode("trades", index));
 		return trades.save();
 	}
-	
+
 	public static boolean saveAll() {
 		for (int i = 0; i < poolSize; i++) {
 			serializeTrade(Manager.trades[i], trades.getNode("trades", i));
 		}
 		return trades.save();
 	}
-	
+
 	public static long getCooldown(UUID uuid) {
 		return cooldowns.getNode(uuid.toString()).getLong(0);
 	}
-	
+
 	public static boolean resetCooldown(UUID uuid) {
 		cooldowns.getNode(uuid.toString()).setValue(System.currentTimeMillis());
 		return cooldowns.save();
 	}
-	
+
 	private static TradeEntry deserializeTrade(ConfigurationNode node) {
-		EnumSpecies type = EnumSpecies.getFromName(node.getNode("name").getString("")).orElseThrow(() -> new IllegalStateException("Malformed storage - no pokemon named " + node.getNode("name").getString()));
+		EnumSpecies type = EnumSpecies.getFromName(node.getNode("name").getString(""))
+				.orElseThrow(() -> new IllegalStateException(
+						"Malformed storage - no pokemon named " + node.getNode("name").getString()));
 		UUID owner = UUID.fromString(node.getNode("owner").getString(Utils.ZERO_UUID.toString()));
 		LocalDateTime date = LocalDateTime.ofEpochSecond(node.getNode("time").getLong(0), 0, ZoneOffset.UTC);
 		Pokemon pokemon = Pixelmon.pokemonFactory.create(type);
@@ -119,9 +124,25 @@ public class Config {
 		pokemon.setForm(node.getNode("form").getInt(0));
 		pokemon.setCaughtBall(EnumPokeballs.values()[node.getNode("ball").getInt(0)]);
 		pokemon.setCustomTexture(node.getNode("customtexture").getString(""));
+		if (Config.EnableEntityParticle) {
+			if (!node.getNode("AuraID").getString("").isEmpty()) {
+				pokemon.getPersistentData().setString("entity-particles:particle",
+						node.getNode("AuraID").getString(""));
+			}
+		}
+
 		return new TradeEntry(pokemon, owner, date);
 	}
-	
+
+	public String getEntityParticlesID(Pokemon p) {
+		NBTTagCompound data = p.getPersistentData();
+		if (data.hasKey("entity-particles:particle")) {
+			return data.getString("entity-particles:particle");
+		} else {
+			return null;
+		}
+	}
+
 	private static void serializeTrade(TradeEntry entry, ConfigurationNode node) {
 		node.getNode("owner").setValue(entry.getOwner().toString());
 		node.getNode("time").setValue(entry.getDate().toEpochSecond(ZoneOffset.UTC));
@@ -135,7 +156,8 @@ public class Config {
 		node.getNode("form").setValue(entry.getPokemon().getForm());
 		node.getNode("ball").setValue(entry.getPokemon().getCaughtBall().ordinal());
 		node.getNode("customtexture").setValue(entry.getPokemon().getCustomTexture());
- 
+		if (EnableEntityParticle) {
+			node.getNode("AuraID").setValue(getEntityParticlesID(entry.getPokemon()));
+		}
 	}
-	
 }
