@@ -200,7 +200,7 @@ public class Utils {
 				.append(pokemon.getStats().evs.specialAttack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
 				.append(pokemon.getStats().evs.specialDefence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
 				.append(pokemon.getStats().evs.speed)
-				.append("\n&3IVs: &9")
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore"))
 				.append(pokemon.getStats().ivs.hp).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore"))
 				.append(pokemon.getStats().ivs.attack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.attack.lore"))
 				.append(pokemon.getStats().ivs.defence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.defence.lore"))
