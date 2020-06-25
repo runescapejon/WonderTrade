@@ -2,6 +2,7 @@
  Check here for more information https://ore.spongepowered.org/Simon_Flash/WonderTrade
 
 # New feature
+- added the ability to edit pokemon description lores on Wondertrade gui, require to delete/or update manually messages.properties if updating from and old version 
 - Support for EntityParticles (Aura) by randombyte
 - Sign the traded pokemon using PersistentData, this allow compatibility with NerfThis author by Licious
 - Added the feature to fully customize the GUI to fit your server needs. 
