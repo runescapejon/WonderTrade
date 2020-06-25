@@ -2,6 +2,8 @@
  Check here for more information https://ore.spongepowered.org/Simon_Flash/WonderTrade
 
 # New feature
+- Support for EntityParticles (Aura) by randombyte
+- Sign the traded pokemon using PersistentData, this allow compatibility with NerfThis author by Licious
 - Added the feature to fully customize the GUI to fit your server needs. 
 - Added the ability to dis-allow hidden ability pokemon from being wondertrade.
 - Support Ultra Beasts
