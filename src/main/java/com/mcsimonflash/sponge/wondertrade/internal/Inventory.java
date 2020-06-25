@@ -272,8 +272,11 @@ public class Inventory {
 			// EnumSpecial.Base, pokemon.isShiny());
 			// from within testing it seem that this part here ain't deprecated and i above
 			// i had completely forgot to add support for custom textures..
+			 
+			//Note: made a workaround using replace because many server owners reported custom textures are returning back to non-textures. I assume that this is a pixelmon 
+			//Even if it's a pixelmon issue or not I'd made a workaround solely only for display sprite. That it will mention in lores what kind of custom texture
 			return "pixelmon:" + GuiResources.getSpritePath(pokemon.getSpecies(), pokemon.getForm(),
-					pokemon.getGender(), pokemon.getCustomTexture(), pokemon.isShiny());
+					pokemon.getGender(), pokemon.getCustomTexture(), pokemon.isShiny()).replace("custom-"+pokemon.getCustomTexture()+"/", "pokemon/");
 		}
 	}
 }
