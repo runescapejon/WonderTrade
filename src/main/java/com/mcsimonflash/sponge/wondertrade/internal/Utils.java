@@ -149,7 +149,7 @@ public class Utils {
 				getDesc(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
 				getDesc(entry.getPokemon()) };
 		if (Config.broadcastTrades
-				&& (entry.getPokemon().isShiny() || entry.getPokemon().isLegendary())) {
+				&& (entry.getPokemon().isShiny() || entry.getPokemon().isLegendary() ||  EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name))) {
 			Sponge.getServer().getBroadcastChannel()
 					.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
 							.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
@@ -178,6 +178,7 @@ public class Utils {
 		return pokemon.isEgg() ? "mysterious egg"
 				: "level " + pokemon.getLevel() + (pokemon.isShiny() ? " shiny " : " ")
 						+ (EnumSpecies.legendaries.contains(pokemon.getSpecies().name) ? "legendary " : "")
+						+ (EnumSpecies.ultrabeasts.contains(pokemon.getSpecies().name) ? "ultra beast " : "")
 						+ pokemon.getSpecies().name;
 	}
 
