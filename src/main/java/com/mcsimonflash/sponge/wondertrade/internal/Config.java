@@ -27,7 +27,7 @@ public class Config {
 
 	private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
 	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart,
-			regenOverwritePlayers, EnableEntityParticle;
+			regenOverwritePlayers, EnableEntityParticle, notify;
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
 	public static String prefix, GUIitem1, GUIItem2;
@@ -39,6 +39,7 @@ public class Config {
 			cooldowns = getLoader(STORAGE, "cooldowns.conf", false);
 			trades = getLoader(STORAGE, "trades.conf", false);
 			EnableEntityParticle = config.getNode("Enable-EntityParticle").getBoolean(false);
+			notify = config.getNode("notify").getBoolean(false);
 			allowEggs = config.getNode("allow-eggs").getBoolean(true);
 			allowuntradeable = config.getNode("allow-untradeable").getBoolean(true);
 			HiddenAbility = config.getNode("allow-HiddenAbility").getBoolean(true);

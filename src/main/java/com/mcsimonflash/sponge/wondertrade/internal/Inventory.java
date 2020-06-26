@@ -180,11 +180,23 @@ public class Inventory {
 					player.sendMessage(WonderTrade.getMessage(player, "wondertrade.trade.reset-cooldown.failure"));
 				}
 			});
+			AtomicLong remaining = new AtomicLong(time / 1000);
 			if (time > 0) {
+			if (Config.notify == true) {	
+				task.set(
+				Task.builder().interval(1, TimeUnit.SECONDS).execute(() -> {
+					if (remaining.getAndDecrement() == 0) {
+						player.sendMessage(Text.of(WonderTrade.getMessage(player, "wondertrade.trade.cooldown.notify")));
+						player.playSound(SoundTypes.BLOCK_NOTE_PLING, player.getLocation().getPosition(), 1);
+					}
+				}).submit(WonderTrade.getContainer()));
+			}
+			 
+			
 				confirm = Element
 						.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(),
 								"&cCooldown", "&4You must wait " + (time / 1000) + " seconds."));
-				AtomicLong remaining = new AtomicLong(time / 1000);
+ 
 				task.set(
 						Task.builder()
 								.execute(
@@ -222,6 +234,11 @@ public class Inventory {
 				.build());
 	}
 
+	public void Notify(AtomicLong a, Player p) {
+		if (a.getAndDecrement() == 0)
+			System.out.println("t");
+		p.sendMessage(Text.of("test"));
+	}
 	public static Page createPoolMenu(boolean take) {
 		Page page = Page.builder().archetype(InventoryArchetypes.DOUBLE_CHEST)
 				.property(InventoryTitle.of(Utils.toText("&3Wonder&9Trade &8Pool"))).layout(PAGE)

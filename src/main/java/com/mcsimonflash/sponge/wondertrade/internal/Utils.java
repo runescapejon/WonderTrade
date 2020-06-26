@@ -9,6 +9,7 @@ import com.pixelmonmod.pixelmon.api.storage.PCStorage;
 import com.pixelmonmod.pixelmon.api.storage.PartyStorage;
 import com.pixelmonmod.pixelmon.entities.pixelmon.EntityPixelmon;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import com.pixelmonmod.pixelmon.enums.forms.EnumNoForm;
 import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.api.Sponge;
@@ -188,12 +189,10 @@ public class Utils {
 		}
 		StringBuilder builder = new StringBuilder(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pokemon.lore").toString()).append(pokemon.getSpecies().name);
 		if (pokemon.getHeldItem() != ItemStack.EMPTY) {
-			builder.append("\n&3Held Item: &9").append(pokemon.getHeldItem().getUnlocalizedName());
+			builder.append("\n&3Held Item: &9").append(pokemon.getHeldItem().getDisplayName());
 		}
 		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ability.lore")).append(pokemon.getAbility().getName())
 		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore")).append(pokemon.getLevel())
-		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore")).append(pokemon.isShiny())
-		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")).append(pokemon.getFormEnum())
 		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.lore"))
 		.append(pokemon.getStats().evs.hp).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore"))
 				.append(pokemon.getStats().evs.attack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.attack.lore"))
@@ -208,6 +207,13 @@ public class Utils {
 				.append(pokemon.getStats().ivs.specialAttack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore"))
 				.append(pokemon.getStats().ivs.specialDefence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
 				.append(pokemon.getStats().ivs.speed);
+		if (pokemon.getFormEnum() 
+				!= EnumNoForm.NoForm) {
+			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")).append(pokemon.getFormEnum());
+		}
+		if (pokemon.isShiny() == true) {
+			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore"));
+		}
 		if (!pokemon.getCustomTexture().isEmpty()) {
 			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore")).append(pokemon.getCustomTexture());
 		}
