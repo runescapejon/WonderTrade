@@ -18,6 +18,7 @@ import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.DyeColors;
+import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemType;
@@ -28,6 +29,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.property.InventoryTitle;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.user.UserStorageService;
+import org.spongepowered.api.text.Text;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -199,7 +201,7 @@ public class Inventory {
 																				"pixelmon:hourglass_silver").get(),
 																		"&cCooldown",
 																		"&4You must wait " + remaining.getAndDecrement()
-																				+ " seconds."))))
+																				+ " seconds."))) )
 								.interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
 			} else {
 				confirm = Element.of(createItem(ItemTypes.SLIME_BALL, "&aConfirm",

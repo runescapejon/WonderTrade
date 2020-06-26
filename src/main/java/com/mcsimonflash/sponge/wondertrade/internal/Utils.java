@@ -149,7 +149,7 @@ public class Utils {
 				getDesc(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
 				getDesc(entry.getPokemon()) };
 		if (Config.broadcastTrades
-				&& (pokemon.isShiny() || EnumSpecies.legendaries.contains(pokemon.getSpecies().name))) {
+				&& (entry.getPokemon().isShiny() || entry.getPokemon().isLegendary())) {
 			Sponge.getServer().getBroadcastChannel()
 					.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
 							.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
