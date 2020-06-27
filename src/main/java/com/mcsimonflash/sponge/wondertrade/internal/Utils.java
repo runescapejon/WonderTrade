@@ -1,6 +1,7 @@
 package com.mcsimonflash.sponge.wondertrade.internal;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.mcsimonflash.sponge.wondertrade.WonderTrade;
 import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
 import com.pixelmonmod.pixelmon.Pixelmon;
@@ -24,6 +25,8 @@ import org.spongepowered.api.text.translation.locale.Locales;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +35,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 	public static final UUID ZERO_UUID = new UUID(0, 0);
-	public static final Pattern MESSAGE = Pattern.compile("\\[(.+?)]\\(((?:.|\n)+?)\\)");
+	public static final Pattern MESSAGE = Pattern.compile("\\[(.+?)]\\(((?:.|\\n)+?)\\)");
 	private static Task task;
 
 	public static void initialize() {
@@ -183,49 +186,57 @@ public class Utils {
 						+ pokemon.getSpecies().name;
 	}
 
-	public static String getDesc(Pokemon pokemon) {
+	
+	//ugh okay this is why i did it here and it's a effective. I'd moved everything to List<Test>.
+	//This will prevent Lores from glitching from the use of \n which cause some clientside issues once and if the client stretch out will cause invalid characters.
+	//Also, that it's not supported or recommended in Sponge to use \n. 
+	
+	public static List<Text> getDesc(Pokemon pokemon) {		
+		List<Text> lore = Lists.newArrayList();
 		if (pokemon.isEgg()) {
-			return WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.egg.lore").toString();
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.egg.lore").toString())));
+			  return lore;
 		}
-		StringBuilder builder = new StringBuilder(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pokemon.lore").toString()).append(pokemon.getSpecies().name);
+	 
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pokemon.lore").toString()+pokemon.getSpecies().name)));
 		if (pokemon.getHeldItem() != ItemStack.EMPTY) {
-			builder.append("\n&3Held Item: &9").append(pokemon.getHeldItem().getDisplayName());
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.helditem.lore") + pokemon.getHeldItem().getDisplayName())));
 		}
-		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ability.lore")).append(pokemon.getAbility().getName())
-		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore")).append(pokemon.getLevel())
-		.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.lore"))
-		.append(pokemon.getStats().evs.hp).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore"))
-				.append(pokemon.getStats().evs.attack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.attack.lore"))
-				.append(pokemon.getStats().evs.defence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.defence.lore"))
-				.append(pokemon.getStats().evs.specialAttack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
-				.append(pokemon.getStats().evs.specialDefence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
-				.append(pokemon.getStats().evs.speed)
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore"))
-				.append(pokemon.getStats().ivs.hp).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore"))
-				.append(pokemon.getStats().ivs.attack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.attack.lore"))
-				.append(pokemon.getStats().ivs.defence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.defence.lore"))
-				.append(pokemon.getStats().ivs.specialAttack).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore"))
-				.append(pokemon.getStats().ivs.specialDefence).append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
-				.append(pokemon.getStats().ivs.speed);
-		if (pokemon.getFormEnum() 
+
+
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ability.lore").toString()+ pokemon.getAbility().getName())  ));
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore").toString() + String.valueOf(pokemon.getLevel()))));
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.lore").toString() +" " +String.valueOf(pokemon.getStats().evs.hp) +   WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore")+
+			  String.valueOf(pokemon.getStats().evs.attack)+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.attack.lore")+
+			  String.valueOf(pokemon.getStats().evs.defence)+WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.defence.lore") +
+			  String.valueOf(pokemon.getStats().evs.specialAttack)+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore")+
+			     String.valueOf(pokemon.getStats().evs.specialDefence)+WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore")+
+				  String.valueOf(pokemon.getStats().evs.speed))));
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore") +
+				String.valueOf(pokemon.getStats().ivs.hp) + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore")  
+				+String.valueOf(pokemon.getStats().ivs.attack)+(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.attack.lore") )
+				+String.valueOf(pokemon.getStats().ivs.defence)+(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.defence.lore") )
+				+String.valueOf(pokemon.getStats().ivs.specialAttack)+(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore") )
+				+String.valueOf(pokemon.getStats().ivs.specialDefence)+(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore") )
+				+String.valueOf(pokemon.getStats().ivs.speed)))); 
+	 	if (pokemon.getFormEnum() 
 				!= EnumNoForm.NoForm) {
-			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")).append(pokemon.getFormEnum());
+	 		lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore") + String.valueOf(pokemon.getFormEnum())))) ;
 		}
 		if (pokemon.isShiny() == true) {
-			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore"));
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore").toString())));
 		}
 		if (!pokemon.getCustomTexture().isEmpty()) {
-			builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore")).append(pokemon.getCustomTexture());
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore") + pokemon.getCustomTexture())));
 		}
 
 		if (Config.EnableEntityParticle) {
 			if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
-				builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore"))
-						.append(pokemon.getPersistentData().getString("entity-particles:particle"));
+				lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore") + pokemon.getPersistentData().getString("entity-particles:particle"))));
 			}
 
-		}
+		} 
 
-		return builder.toString();
+		return lore; 
 	}
 }

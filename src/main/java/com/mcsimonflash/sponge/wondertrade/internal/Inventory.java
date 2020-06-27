@@ -234,11 +234,6 @@ public class Inventory {
 				.build());
 	}
 
-	public void Notify(AtomicLong a, Player p) {
-		if (a.getAndDecrement() == 0)
-			System.out.println("t");
-		p.sendMessage(Text.of("test"));
-	}
 	public static Page createPoolMenu(boolean take) {
 		Page page = Page.builder().archetype(InventoryArchetypes.DOUBLE_CHEST)
 				.property(InventoryTitle.of(Utils.toText("&3Wonder&9Trade &8Pool"))).layout(PAGE)
@@ -259,6 +254,11 @@ public class Inventory {
 				.add(Keys.ITEM_LORE, lore.isEmpty() ? Lists.newArrayList() : Lists.newArrayList(Utils.toText(lore)))
 				.build();
 	}
+	private static ItemStack CreateItemLore(ItemType type, String name, Pokemon p) {
+		return ItemStack.builder().itemType(type).add(Keys.DISPLAY_NAME, Utils.toText(name))
+				.add(Keys.ITEM_LORE, Utils.getDesc(p))
+				.build();
+	}
 
 	private static ItemStack createPokemonItem(String name, TradeEntry entry) {
 		String owner = entry.getOwner().equals(Utils.ZERO_UUID) ? "Server"
@@ -273,7 +273,7 @@ public class Inventory {
 
 	private static ItemStack createPokemonItem(String name, Pokemon pokemon) {
 		return ItemStack.builder()
-				.fromContainer(createItem((ItemType) PixelmonItems.itemPixelmonSprite, name, Utils.getDesc(pokemon))
+				.fromContainer(CreateItemLore((ItemType) PixelmonItems.itemPixelmonSprite, name,pokemon)
 						.toContainer().set(DataQuery.of("UnsafeData", "SpriteName"), getSpriteName(pokemon)))
 				.build();
 	}

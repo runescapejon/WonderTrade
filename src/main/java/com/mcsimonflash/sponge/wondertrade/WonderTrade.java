@@ -1,12 +1,13 @@
 package com.mcsimonflash.sponge.wondertrade;
 
 import com.google.inject.Inject;
+import com.mcsimonflash.sponge.teslalibs.command.CommandService;
+import com.mcsimonflash.sponge.teslalibs.message.Message;
+import com.mcsimonflash.sponge.teslalibs.message.MessageService;
 import com.mcsimonflash.sponge.wondertrade.command.Base;
 import com.mcsimonflash.sponge.wondertrade.command.Menu;
 import com.mcsimonflash.sponge.wondertrade.internal.Config;
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
-
-import net.minecraftforge.fml.common.Loader;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -24,7 +25,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.11", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.12", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
 		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
 
@@ -32,9 +33,9 @@ public class WonderTrade {
 	private static WonderTrade instance;
 	private static PluginContainer container;
 	private static Logger logger;
-	private static com.mcsimonflash.sponge.teslalibs.command.CommandService commands;
+	private static CommandService commands;
 	private static Path directory;
-	private static com.mcsimonflash.sponge.teslalibs.message.MessageService messages;
+	private static MessageService messages;
 	private static Text prefix;
 
 	@Inject
@@ -42,15 +43,15 @@ public class WonderTrade {
 		instance = this;
 		container = c;
 		logger = container.getLogger();
-		commands = com.mcsimonflash.sponge.teslalibs.command.CommandService.of(container);
+		commands = CommandService.of(container);
 		directory = Sponge.getConfigManager().getPluginConfig(container).getDirectory();
 		Path translations = directory.resolve("translations");
 		try {
 			container.getAsset("messages.properties").get().copyToDirectory(translations);
-			messages = com.mcsimonflash.sponge.teslalibs.message.MessageService.of(translations, "messages");
+			messages =  MessageService.of(translations, "messages");
 		} catch (IOException e) {
 			logger.error("An error occurred initializing message translations. Using internal copies.");
-			messages = com.mcsimonflash.sponge.teslalibs.message.MessageService.of(container, "messages");
+			messages =  MessageService.of(container, "messages");
 		}
 
 	}
@@ -75,8 +76,8 @@ public class WonderTrade {
 		return prefix;
 	}
 
-	public static com.mcsimonflash.sponge.teslalibs.message.Message getMessage(Locale locale, String key,
-			Object... args) {
+	public static Message getMessage(Locale locale, String key,
+			Object... args) {	 
 		return messages.get(key, locale).args(args);
 	}
 
