@@ -179,10 +179,10 @@ public class Utils {
 	}
 
 	public static String getShortDesc(Pokemon pokemon) {
-		return pokemon.isEgg() ? "mysterious egg"
+		return pokemon.isEgg() ? "Mysterious Egg"
 				: "level " + pokemon.getLevel() + (pokemon.isShiny() ? " shiny " : " ")
-						+ (EnumSpecies.legendaries.contains(pokemon.getSpecies().name) ? "legendary " : "")
-						+ (EnumSpecies.ultrabeasts.contains(pokemon.getSpecies().name) ? "ultra beast " : "")
+						+ (EnumSpecies.legendaries.contains(pokemon.getSpecies().name) ? "Legendary " : "")
+						+ (EnumSpecies.ultrabeasts.contains(pokemon.getSpecies().name) ? "Ultra Beast " : "")
 						+ pokemon.getSpecies().name;
 	}
 
