@@ -1,7 +1,7 @@
 ## WonderTrade 
  Check here for more information https://ore.spongepowered.org/Simon_Flash/WonderTrade
 
-# Discord Help?
+Help ?
 https://discord.gg/XXgEpq3
 
 # New features
