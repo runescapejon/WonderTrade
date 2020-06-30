@@ -1,6 +1,9 @@
 ## WonderTrade 
  Check here for more information https://ore.spongepowered.org/Simon_Flash/WonderTrade
 
+# Discord Help?
+https://discord.gg/XXgEpq3
+
 # New features
 - Improve cooldown display in lore, now it mention to players the exact hour and minutes, seconds.
 - Added in trading broadcast Ultra Beasts if someone managed to get it.
