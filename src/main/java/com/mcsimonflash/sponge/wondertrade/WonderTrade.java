@@ -7,25 +7,33 @@ import com.mcsimonflash.sponge.teslalibs.message.MessageService;
 import com.mcsimonflash.sponge.wondertrade.command.Base;
 import com.mcsimonflash.sponge.wondertrade.command.Menu;
 import com.mcsimonflash.sponge.wondertrade.internal.Config;
+ 
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.effect.sound.SoundTypes;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
-@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.13", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.14", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
 		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
 
@@ -91,10 +99,30 @@ public class WonderTrade {
 		commands.register(Base.class);
 		Sponge.getCommandManager().register(container, commands.getInstance(Menu.class).getSpec(), "wt");
 		Utils.initialize();
-
 	}
- 
 
+	@Listener
+	public void onClientConnection(ClientConnectionEvent.Join event) {
+		Player p = event.getTargetEntity().getPlayer().get();
+		setnotify(p);
+	}
+	
+	
+ 	public static void setnotify(Player player) {
+		AtomicReference<Task> task = new AtomicReference<>(null);
+		if (task.get() != null)
+			task.get().cancel();
+		long time = Utils.getCooldown(player)
+				- (System.currentTimeMillis() - Config.getCooldown(player.getUniqueId()));
+		AtomicLong remaining = new AtomicLong(time / 1000);
+		task.set(Task.builder().interval(1, TimeUnit.SECONDS).execute(() -> {
+			if (remaining.getAndDecrement() == 0) {
+				player.sendMessage(Text.of(WonderTrade.getMessage(player, "wondertrade.trade.cooldown.notify")));
+				player.playSound(SoundTypes.BLOCK_NOTE_PLING, player.getLocation().getPosition(), 1);
+			}
+		}).submit(WonderTrade.getContainer()));
+	} 
+ 
 	@Listener
 	public void onReload(GameReloadEvent event) {
 		messages.reload();

@@ -10,15 +10,12 @@ import com.pixelmonmod.pixelmon.api.storage.PCStorage;
 import com.pixelmonmod.pixelmon.client.gui.GuiResources;
 import com.pixelmonmod.pixelmon.config.PixelmonItems;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
-import com.pixelmonmod.pixelmon.enums.forms.EnumSpecial;
 import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.type.DyeColors;
-import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemType;
@@ -29,8 +26,6 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.property.InventoryTitle;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.user.UserStorageService;
-import org.spongepowered.api.text.Text;
-
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -176,45 +171,31 @@ public class Inventory {
 				if (Config.resetCooldown(player.getUniqueId())) {
 					action.accept(a);
 					player.closeInventory();
+					WonderTrade.setnotify(a.getPlayer());
 				} else {
 					player.sendMessage(WonderTrade.getMessage(player, "wondertrade.trade.reset-cooldown.failure"));
 				}
 			});
-			AtomicLong remaining = new AtomicLong(time / 1000);
+			AtomicLong seconds = new AtomicLong(time / 1000);
 			if (time > 0) {
-			if (Config.notify == true) {	
-				task.set(
-				Task.builder().interval(1, TimeUnit.SECONDS).execute(() -> {
-					if (remaining.getAndDecrement() == 0) {
-						player.sendMessage(Text.of(WonderTrade.getMessage(player, "wondertrade.trade.cooldown.notify")));
-						player.playSound(SoundTypes.BLOCK_NOTE_PLING, player.getLocation().getPosition(), 1);
-					}
-				}).submit(WonderTrade.getContainer()));
-			}
-			 
-			
-				confirm = Element
-						.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(),
-								"&cCooldown", "&4You must wait " + (time / 1000) + " seconds."));
- 
-				task.set(
-						Task.builder()
-								.execute(
-										t -> view
-												.setElement(10,
-														remaining.get() <= 0
-																? Element.of(createItem(
-																		ItemTypes.SLIME_BALL, "&aConfirm",
-																		"&2WonderTrade your "
-																				+ Utils.getShortDesc(pokemon)),
-																		act)
-																: Element.of(createItem(
-																		Sponge.getRegistry().getType(ItemType.class,
-																				"pixelmon:hourglass_silver").get(),
-																		"&cCooldown",
-																		"&4You must wait " + remaining.getAndDecrement()
-																				+ " seconds."))) )
-								.interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
+				confirm = Element.of(createItem(
+						Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(), "&cCooldown",
+						"&4You must wait " + TimeUnit.MILLISECONDS.toHours(time) + " Hours, "
+								+ TimeUnit.MILLISECONDS.toMinutes(time) + " Minutes, " + seconds.getAndDecrement()
+								+ " Seconds"));
+
+				task.set(Task.builder()
+						.execute(t -> view.setElement(10, seconds.get() <= 0
+								? Element.of(createItem(ItemTypes.SLIME_BALL, "&aConfirm",
+										"&2WonderTrade your " + Utils.getShortDesc(pokemon)), act)
+								: Element.of(createItem(
+										Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(),
+										"&cCooldown",
+										"&4You must wait " + TimeUnit.MILLISECONDS.toHours(time) + " Hours, "
+												+ TimeUnit.MILLISECONDS.toMinutes(time) + " Minutes, "
+												+ seconds.getAndDecrement() + " Seconds")))
+
+						).interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
 			} else {
 				confirm = Element.of(createItem(ItemTypes.SLIME_BALL, "&aConfirm",
 						"&2WonderTrade your " + Utils.getShortDesc(pokemon)), act);
@@ -254,10 +235,10 @@ public class Inventory {
 				.add(Keys.ITEM_LORE, lore.isEmpty() ? Lists.newArrayList() : Lists.newArrayList(Utils.toText(lore)))
 				.build();
 	}
+
 	private static ItemStack CreateItemLore(ItemType type, String name, Pokemon p) {
 		return ItemStack.builder().itemType(type).add(Keys.DISPLAY_NAME, Utils.toText(name))
-				.add(Keys.ITEM_LORE, Utils.getDesc(p))
-				.build();
+				.add(Keys.ITEM_LORE, Utils.getLore(p)).build();
 	}
 
 	private static ItemStack createPokemonItem(String name, TradeEntry entry) {
@@ -266,15 +247,15 @@ public class Inventory {
 						.map(User::getName).orElse(entry.getOwner().toString());
 		return ItemStack.builder()
 				.fromContainer(createItem((ItemType) PixelmonItems.itemPixelmonSprite, name,
-						Utils.getDesc(entry.getPokemon()) + "\nOwner: " + owner).toContainer()
+						Utils.getLore(entry.getPokemon()) + "\nOwner: " + owner).toContainer()
 								.set(DataQuery.of("UnsafeData", "SpriteName"), getSpriteName(entry.getPokemon())))
 				.build();
 	}
 
 	private static ItemStack createPokemonItem(String name, Pokemon pokemon) {
 		return ItemStack.builder()
-				.fromContainer(CreateItemLore((ItemType) PixelmonItems.itemPixelmonSprite, name,pokemon)
-						.toContainer().set(DataQuery.of("UnsafeData", "SpriteName"), getSpriteName(pokemon)))
+				.fromContainer(CreateItemLore((ItemType) PixelmonItems.itemPixelmonSprite, name, pokemon).toContainer()
+						.set(DataQuery.of("UnsafeData", "SpriteName"), getSpriteName(pokemon)))
 				.build();
 	}
 
@@ -291,11 +272,16 @@ public class Inventory {
 			// EnumSpecial.Base, pokemon.isShiny());
 			// from within testing it seem that this part here ain't deprecated and i above
 			// i had completely forgot to add support for custom textures..
-			 
-			//Note: made a workaround using replace because many server owners reported custom textures are returning back to non-textures. I assume that this is a pixelmon 
-			//Even if it's a pixelmon issue or not I'd made a workaround solely only for display sprite. That it will mention in lores what kind of custom texture
-			return "pixelmon:" + GuiResources.getSpritePath(pokemon.getSpecies(), pokemon.getForm(),
-					pokemon.getGender(), pokemon.getCustomTexture(), pokemon.isShiny()).replace("custom-"+pokemon.getCustomTexture()+"/", "pokemon/");
+
+			// Note: made a workaround using replace because many server owners reported
+			// custom textures are returning back to non-textures. I assume that this is a
+			// pixelmon
+			// Even if it's a pixelmon issue or not I'd made a workaround solely only for
+			// display sprite. That it will mention in lores what kind of custom texture
+			return "pixelmon:" + GuiResources
+					.getSpritePath(pokemon.getSpecies(), pokemon.getForm(), pokemon.getGender(),
+							pokemon.getCustomTexture(), pokemon.isShiny())
+					.replace("custom-" + pokemon.getCustomTexture() + "/", "pokemon/");
 		}
 	}
 }
