@@ -103,6 +103,19 @@ public class Inventory {
 	private static Element createPokemonElement(Player player, Pokemon pokemon, String name,
 			Consumer<Action.Click> action) {
 		if (pokemon != null) {
+			
+			if (Config.allowultrabeast && pokemon.getSpecies().isUltraBeast()) {
+				return Element.of(createPokemonItem("&b" + name, pokemon), action);
+			}
+			
+			if (Config.allowultrabeast == false &&  pokemon.getSpecies().isUltraBeast()) {
+				ItemStack item = createPokemonItem("&b" + name, pokemon);
+				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
+						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast").toText()));
+				return Element.of(item);
+
+			}
+			
 			if (Config.HiddenAbility && pokemon.getAbilitySlot() != 2) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}

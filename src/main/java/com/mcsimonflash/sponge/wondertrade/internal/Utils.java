@@ -140,6 +140,8 @@ public class Utils {
 	}
 
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
+		Preconditions.checkArgument(Config.allowultrabeast || !pokemon.getSpecies().isUltraBeast(),
+				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast"));		
 		Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(),
 				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs"));
 		Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"),
