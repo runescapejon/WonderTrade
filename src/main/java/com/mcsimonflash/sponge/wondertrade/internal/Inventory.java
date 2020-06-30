@@ -26,6 +26,8 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.property.InventoryTitle;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.user.UserStorageService;
+import org.spongepowered.api.text.translation.locale.Locales;
+
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -44,12 +46,14 @@ public class Inventory {
 
 	private static final Element LIGHT_BLUE = Element.of(ItemStack.builder().fromContainer(DataContainer1).build());
 	private static final Element DARK_BLUE = Element.of(ItemStack.builder().fromContainer(DataContainer2).build());
-	private static final Element CLOSE = Element.of(createItem(ItemTypes.BARRIER, "&cClose", "&4Close the menu"),
+	private static final Element CLOSE = Element.of(createItem(ItemTypes.BARRIER, WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.title.close").toString(), WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.lore.close").toString()),
 			inTask(a -> a.getPlayer().closeInventory()));
 	private static final Layout MAIN = Layout.builder().set(DARK_BLUE, 0, 2, 4, 6, 8, 18, 20, 22, 24, 26)
 			.set(LIGHT_BLUE, 1, 3, 5, 7, 9, 17, 19, 21, 23, 25).build();
 	private static final Element MENU = Element.of(
-			createItem((ItemType) PixelmonItems.tradeMonitor, "&bMenu", "&3Return to the main menu"),
+			createItem((ItemType) PixelmonItems.tradeMonitor,
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.title.menu").toString(),
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.lore.menu").toString()),
 			inTask(a -> createMainMenu(a.getPlayer()).open(a.getPlayer())));
 	private static final Layout PAGE = Layout.builder().set(DARK_BLUE, 0, 2, 4, 6, 8, 18, 26, 36, 38, 40, 42, 44)
 			.set(LIGHT_BLUE, 1, 3, 5, 7, 9, 17, 27, 35, 37, 39, 41, 43, 45, 53).set(MENU, 46).set(Page.FIRST, 47)
@@ -91,31 +95,31 @@ public class Inventory {
 			elements[i] = createPokemonElement(player, pc.get(box, pos), "Position " + (pos + 1),
 					inTask(a -> createTradeMenu(player, box, pos).open(player)));
 		}
-		return createView(InventoryArchetypes.DOUBLE_CHEST, "&3Wonder&9Trade &8PC", Layout.builder().from(PC)
-				.replace(Page.FIRST, createPageElement("&bFirst Box ", box, 0))
-				.replace(Page.LAST, createPageElement("&bLast Box ", box, pc.getBoxCount() - 1))
-				.replace(Page.NEXT, createPageElement("&bNext Box ", box, box == pc.getBoxCount() - 1 ? box : box + 1))
-				.replace(Page.PREVIOUS, createPageElement("&bPrevious Box", box, box == 0 ? box : box - 1))
-				.replace(Page.CURRENT, createPageElement("&bCurrent Box", box, box)).page(Arrays.asList(elements))
+		return createView(InventoryArchetypes.DOUBLE_CHEST, WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pc").toString(), Layout.builder().from(PC)
+				.replace(Page.FIRST, createPageElement( WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pc.firstbox").toString(), box, 0))
+				.replace(Page.LAST, createPageElement( WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pc.lastbox").toString(), box, pc.getBoxCount() - 1))
+				.replace(Page.NEXT, createPageElement( WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pc.nextbox").toString(), box, box == pc.getBoxCount() - 1 ? box : box + 1))
+				.replace(Page.PREVIOUS, createPageElement( WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pc.previousbox").toString(), box, box == 0 ? box : box - 1))
+				.replace(Page.CURRENT, createPageElement( WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pc.currentbox").toString(), box, box)).page(Arrays.asList(elements))
 				.build());
 	}
 
 	private static Element createPokemonElement(Player player, Pokemon pokemon, String name,
 			Consumer<Action.Click> action) {
 		if (pokemon != null) {
-			
+
 			if (Config.allowultrabeast && pokemon.getSpecies().isUltraBeast()) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}
-			
-			if (Config.allowultrabeast == false &&  pokemon.getSpecies().isUltraBeast()) {
+
+			if (Config.allowultrabeast == false && pokemon.getSpecies().isUltraBeast()) {
 				ItemStack item = createPokemonItem("&b" + name, pokemon);
 				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
 						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast").toText()));
 				return Element.of(item);
 
 			}
-			
+
 			if (Config.HiddenAbility && pokemon.getAbilitySlot() != 2) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}
@@ -146,7 +150,8 @@ public class Inventory {
 			}
 
 		} else {
-			return Element.of(createItem(ItemTypes.BARRIER, "&cEmpty", "&4No Pokemon in " + name.toLowerCase()));
+			return Element.of(createItem(ItemTypes.BARRIER, WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.title.empty").toString(),
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.lore.empty").toString()  + name.toLowerCase()));
 		}
 	}
 
@@ -159,7 +164,7 @@ public class Inventory {
 
 	public static View createTradeMenu(Player player, int slot) {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
-		return createTradeMenu(player, party.get(slot), "&bSlot " + (slot + 1), a -> Utils.trade(player, slot));
+		return createTradeMenu(player, party.get(slot), WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.slot").toString() + (slot + 1), a -> Utils.trade(player, slot));
 	}
 
 	public static View createTradeMenu(Player player, int box, int pos) {
@@ -191,54 +196,70 @@ public class Inventory {
 			});
 			AtomicLong seconds = new AtomicLong(time / 1000);
 			if (time > 0) {
-				confirm = Element.of(createItem(
-						Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(), "&cCooldown",
-						"&4You must wait " + TimeUnit.MILLISECONDS.toHours(time) + " Hours, "
-								+ TimeUnit.MILLISECONDS.toMinutes(time) + " Minutes, " + seconds.getAndDecrement()
-								+ " Seconds"));
+				confirm = Element
+						.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(),
+								WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.title.cooldown").toString(),
+								WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.lore.cooldown").toString()
+										.replace("%h%", String.valueOf(TimeUnit.MILLISECONDS.toHours(time)))
+										.replace("%m%", String.valueOf(TimeUnit.MILLISECONDS.toMinutes(time)))));
 
 				task.set(Task.builder()
-						.execute(t -> view.setElement(10, seconds.get() <= 0
-								? Element.of(createItem(ItemTypes.SLIME_BALL, "&aConfirm",
+						.execute(t -> view.setElement(10,
+								seconds.get() <= 0 ? Element.of(createItem(ItemTypes.SLIME_BALL,
+										WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.confirm").toString(),
 										"&2WonderTrade your " + Utils.getShortDesc(pokemon)), act)
-								: Element.of(createItem(
-										Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(),
-										"&cCooldown",
-										"&4You must wait " + TimeUnit.MILLISECONDS.toHours(time) + " Hours, "
-												+ TimeUnit.MILLISECONDS.toMinutes(time) + " Minutes, "
-												+ seconds.getAndDecrement() + " Seconds")))
-
-						).interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
+										: Element.of(createItem(
+												Sponge.getRegistry()
+														.getType(ItemType.class, "pixelmon:hourglass_silver").get(),
+												WonderTrade
+														.getMessage(Locales.DEFAULT, "wondertrade.title.cooldown")
+														.toString(),
+												WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.lore.cooldown")
+														.toString()
+														.replace("%h%",
+																String.valueOf(TimeUnit.MILLISECONDS.toHours(time)))
+														.replace("%m%",
+																String.valueOf(TimeUnit.MILLISECONDS.toMinutes(time)))
+														.replace("%s%", String.valueOf(seconds.getAndDecrement()))))))
+						.interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
 			} else {
-				confirm = Element.of(createItem(ItemTypes.SLIME_BALL, "&aConfirm",
-						"&2WonderTrade your " + Utils.getShortDesc(pokemon)), act);
+				confirm = Element.of(createItem(ItemTypes.SLIME_BALL,
+						WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.confirm").toString(),
+						WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.shortdesc").toString()
+								.replace("%desc%", Utils.getShortDesc(pokemon))),
+						act);
 			}
 		} else {
-			confirm = Element.of(
-					createItem(ItemTypes.SLIME_BALL, "&aConfirm", "&2WonderTrade your " + Utils.getShortDesc(pokemon)),
+			confirm = Element.of(createItem(ItemTypes.SLIME_BALL,
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.confirm").toString(),
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.shortdesc").toString().replace("%desc%",
+							Utils.getShortDesc(pokemon))),
 					inTask(a -> {
 						action.accept(a);
 						createMainMenu(player).open(player);
 					}));
 		}
-		return view.define(Layout.builder().from(MAIN).set(DARK_BLUE, 12, 14).set(LIGHT_BLUE, 11, 15)
-				.set(Element.of(createPokemonItem(name, pokemon)), 13).set(confirm, 10)
-				.set(Element.of(createItem(ItemTypes.MAGMA_CREAM, "&cCancel", "&4Cancel this trade"),
-						inTask(a -> createMainMenu(player).open(player))), 16)
-				.build());
+		return view
+				.define(Layout.builder().from(MAIN).set(DARK_BLUE, 12, 14).set(LIGHT_BLUE, 11, 15)
+						.set(Element.of(createPokemonItem(name, pokemon)), 13).set(confirm, 10)
+						.set(Element.of(createItem(ItemTypes.MAGMA_CREAM,
+								WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.cancel").toString(),
+								WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.lore.cancel").toString()),
+								inTask(a -> createMainMenu(player).open(player))), 16)
+						.build());
 	}
 
 	public static Page createPoolMenu(boolean take) {
 		Page page = Page.builder().archetype(InventoryArchetypes.DOUBLE_CHEST)
-				.property(InventoryTitle.of(Utils.toText("&3Wonder&9Trade &8Pool"))).layout(PAGE)
-				.build(WonderTrade.getContainer());
+				.property(InventoryTitle.of(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pool").toText()))
+				.layout(PAGE).build(WonderTrade.getContainer());
 		Element[] pool = new Element[Config.poolSize];
 		for (int i = 0; i < Config.poolSize; i++) {
 			int index = i;
-			pool[i] = take ? Element.of(createPokemonItem("&bPosition " + (i + 1), Manager.trades[index]), inTask(a -> {
+			pool[i] = take ? Element.of(createPokemonItem(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.position").toString() + (i + 1), Manager.trades[index]), inTask(a -> {
 				Utils.take(a.getPlayer(), index);
 				createPoolMenu(take).open(a.getPlayer(), index / 21);
-			})) : Element.of(createPokemonItem("&bPosition " + (i + 1), Manager.trades[index]));
+			})) : Element.of(createPokemonItem(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.position").toString() + (i + 1), Manager.trades[index]));
 		}
 		return page.define(Arrays.asList(pool));
 	}

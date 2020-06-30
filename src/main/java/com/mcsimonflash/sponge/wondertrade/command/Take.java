@@ -17,22 +17,25 @@ import org.spongepowered.api.entity.living.player.Player;
 @Aliases("take")
 @Permission("wondertrade.command.take.base")
 public class Take extends Command {
-	
+
 	@Inject
 	protected Take(Settings settings) {
-		super(settings.usage(CmdUtils.usage("/wondertrade take ", "Takes a Pokemon from the pool.", CmdUtils.arg(true, "index", "The index to remove in the range 1 to the pool size.")))
+		super(settings
+				.usage(CmdUtils.usage("/wondertrade take ", "Takes a Pokemon from the pool.",
+						CmdUtils.arg(true, "index", "The index to remove in the range 1 to the pool size.")))
 				.elements(Arguments.intObj().toElement("index")));
 	}
-	
+
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 		Player player = CmdUtils.requirePlayer(src);
 		int index = args.<Integer>getOne("index").get();
 		if (index <= 0 || index > Config.poolSize) {
-			throw new CommandException(WonderTrade.getMessage(src, "wondertrade.command.take.invalid-index", "min", 1, "max", Config.poolSize));
+			throw new CommandException(WonderTrade.getMessage(src, "wondertrade.command.take.invalid-index", "min", 1,
+					"max", Config.poolSize));
 		}
 		Utils.take(player, index - 1);
 		return CommandResult.success();
 	}
-	
+
 }

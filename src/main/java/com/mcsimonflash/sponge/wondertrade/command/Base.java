@@ -19,27 +19,31 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Aliases({"wondertrade", "wtrade"})
+@Aliases({ "wondertrade", "wtrade" })
 @Permission("wondertrade.command.base")
-@Children({Menu.class, Pool.class, Regen.class, Take.class, Trade.class})
+@Children({ Menu.class, Pool.class, Regen.class, Take.class, Trade.class })
 public class Base extends Command {
-	
-	private static final Text LINKS = Text.of("                       ", CmdUtils.link("Ore Project", Utils.parseURL("https://ore.spongepowerd.org/Simon_Flash/WonderTrade")), TextColors.GRAY, " | ", CmdUtils.link("Support Discord", Utils.parseURL("https://discord.gg/4wayq37")));
-	
+
+	private static final Text LINKS = Text.of("                       ",
+			CmdUtils.link("Github", Utils.parseURL("https://github.com/runescapejon/WonderTrade")), TextColors.GRAY,
+			" | ", CmdUtils.link("Support Discord", Utils.parseURL("https://discord.gg/XXgEpq3")));
+
 	@Inject
 	protected Base(Settings settings) {
 		super(settings.usage(CmdUtils.usage("/wondertrade", "The base command for WonderTrade")));
 	}
-	
+
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) {
-		PaginationList.builder()
-				.title(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix)))
+		PaginationList.builder().title(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix)))
 				.padding(Utils.toText("&7="))
-				.contents(Stream.concat(Stream.of(getUsage()), ((Command) this).getChildren().stream().filter(c -> c.getSpec().testPermission(src)).map(Command::getUsage)).collect(Collectors.toList()))
-				.footer(LINKS)
-				.sendTo(src);
+				.contents(
+						Stream.concat(Stream.of(getUsage()),
+								((Command) this).getChildren().stream().filter(c -> c.getSpec().testPermission(src))
+										.map(Command::getUsage))
+								.collect(Collectors.toList()))
+				.footer(LINKS).sendTo(src);
 		return CommandResult.success();
 	}
-	
+
 }
