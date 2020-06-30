@@ -2,6 +2,7 @@
  Check here for more information https://ore.spongepowered.org/Simon_Flash/WonderTrade
 
 # New features
+- Improve cooldown display in lore, now it mention to players the exact hour and minutes, seconds.
 - Added in trading broadcast Ultra Beasts if someone managed to get it.
 - Fixed pokemon legendary/shiny not displaying in broadcast
 - Made CustomTexture/Shiny/Aura hide if a pokemon donesn't contain it for better organizating pokemon description.
