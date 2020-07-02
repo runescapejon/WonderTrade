@@ -1,5 +1,24 @@
 package com.mcsimonflash.sponge.wondertrade.internal;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.text.DecimalFormat;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.serializer.TextSerializers;
+import org.spongepowered.api.text.translation.locale.Locales;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.mcsimonflash.sponge.wondertrade.WonderTrade;
@@ -9,30 +28,13 @@ import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.api.storage.PCStorage;
 import com.pixelmonmod.pixelmon.api.storage.PartyStorage;
 import com.pixelmonmod.pixelmon.entities.pixelmon.EntityPixelmon;
+import com.pixelmonmod.pixelmon.entities.pixelmon.stats.Gender;
+import com.pixelmonmod.pixelmon.enums.EnumNature;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import com.pixelmonmod.pixelmon.enums.forms.EnumNoForm;
 import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
-import net.minecraft.item.ItemStack;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.scheduler.Task;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.TextActions;
-import org.spongepowered.api.text.serializer.TextSerializers;
-import org.spongepowered.api.text.translation.locale.Locales;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import net.minecraft.item.ItemStack;
 
 public class Utils {
 	public static final UUID ZERO_UUID = new UUID(0, 0);
@@ -187,10 +189,10 @@ public class Utils {
 						+ (pokemon.isShiny() ? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny").toString()
 								: " ")
 						+ (EnumSpecies.legendaries.contains(pokemon.getSpecies().name)
-								? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.legendary").toString()
+								? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.legendary").toString() + " "
 								: "")
 						+ (EnumSpecies.ultrabeasts.contains(pokemon.getSpecies().name)
-								? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ultrabeast").toString()
+								? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ultrabeast").toString() + " "
 								: "")
 						+ pokemon.getSpecies().name;
 	}
@@ -210,6 +212,7 @@ public class Utils {
 	// instead of trying to merge them causing weird clientsided issues, especially
 	// with \n.
 	public static String gethover(Pokemon pokemon) {
+		DecimalFormat dformat = new DecimalFormat("#0.##");
 		if (pokemon.isEgg()) {
 			return WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.egg.lore").toString();
 		}
@@ -222,9 +225,9 @@ public class Utils {
 		}
 		builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ability.lore"))
 				.append(pokemon.getAbility().getName()).append("\n")
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore")).append(pokemon.getLevel())
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore")).append(pokemon.getLevel());
 
-				.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.lore"))
+		builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.lore"))
 				.append(pokemon.getStats().evs.hp)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore"))
 				.append(pokemon.getStats().evs.attack)
@@ -235,9 +238,11 @@ public class Utils {
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
 				.append(pokemon.getStats().evs.specialDefence)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
-				.append(pokemon.getStats().evs.speed).append("\n")
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore"))
-				.append(pokemon.getStats().ivs.hp)
+				.append(pokemon.getStats().evs.speed)
+				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.total.lore").toString()
+						.replace("%totalev%", String.valueOf(" " + dformat.format(totalEVs(pokemon) / 510.0 * 100))))
+				.append("\n");
+		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore")).append(pokemon.getStats().ivs.hp)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore"))
 				.append(pokemon.getStats().ivs.attack)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.attack.lore"))
@@ -247,14 +252,122 @@ public class Utils {
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
 				.append(pokemon.getStats().ivs.specialDefence)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
-				.append(pokemon.getStats().ivs.speed);
+				.append(pokemon.getStats().ivs.speed)
+				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString()
+						.replace("%totaliv%", String.valueOf(" " + dformat.format(totalIVs(pokemon) / 186.0 * 100))));
 
+		if (pokemon.getGender().equals(Gender.Female)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.gender.female.lore"));
+		}
+		if (pokemon.getGender().equals(Gender.Male)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.gender.male.lore"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Adamant)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.adamant"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Bashful)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.bashful"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Bold)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.bold"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Brave)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.brave"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Calm)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.calm"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Careful)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.careful"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Docile)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.docile"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Gentle)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.gentle"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Hardy)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.hardy"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Hasty)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.hasty"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Impish)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.impish"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Jolly)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.jolly"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Lax)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.lax"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Lonely)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.lonely"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Mild)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.mild"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Modest)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.modest"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Naive)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.naive"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Naughty)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.naughty"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Quiet)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.quiet"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Quirky)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.quirky"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Rash)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.rash"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Relaxed)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.relaxed"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Sassy)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.sassy"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Serious)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.serious"));
+		}
+		if (pokemon.getNature().equals(EnumNature.Timid)) {
+			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature"))
+					.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.timid").toString());
+		}
 		if (pokemon.getFormEnum() != EnumNoForm.NoForm) {
 			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")
 					+ String.valueOf(pokemon.getFormEnum()));
 		}
 		if (pokemon.isShiny() == true) {
-			builder.append("\n").append((WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore").toString()));
+			builder.append("\n").append((WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore")));
 		}
 		if (!pokemon.getCustomTexture().isEmpty()) {
 			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore")
@@ -272,9 +385,9 @@ public class Utils {
 
 	public static List<Text> getLore(Pokemon pokemon) {
 		List<Text> lore = Lists.newArrayList();
+		DecimalFormat dformat = new DecimalFormat("#0.##");
 		if (pokemon.isEgg()) {
-			lore.add(Text.of(TextSerializers.FORMATTING_CODE
-					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.egg.lore").toString())));
+			lore.add(Text.of(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.egg.lore").toString()));
 			return lore;
 		}
 
@@ -282,14 +395,121 @@ public class Utils {
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pokemon.lore").toString()
 						+ pokemon.getSpecies().name)));
 		if (pokemon.getHeldItem() != ItemStack.EMPTY) {
-			lore.add(Text.of(TextSerializers.FORMATTING_CODE
-					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.helditem.lore")
-							+ pokemon.getHeldItem().getDisplayName())));
+			lore.add(Text.of(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.helditem.lore")
+					+ pokemon.getHeldItem().getDisplayName()));
 		}
 
 		lore.add(Text.of(TextSerializers.FORMATTING_CODE
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ability.lore").toString()
 						+ pokemon.getAbility().getName())));
+		if (pokemon.getGender().equals(Gender.Female)) {
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.gender.female.lore").toString())));
+		}
+		if (pokemon.getGender().equals(Gender.Male)) {
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE
+					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.gender.male.lore").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Adamant)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.adamant").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Bashful)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.bashful").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Bold)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.bold").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Brave)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.brave").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Calm)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.calm").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Careful)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.careful").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Docile)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.docile").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Gentle)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.gentle").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Hardy)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.hardy").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Hasty)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.hasty").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Impish)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.impish").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Jolly)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.jolly").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Lax)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.lax").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Lonely)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.lonely").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Mild)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.mild").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Modest)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.modest").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Naive)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.naive").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Naughty)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.naughty").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Quiet)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.quiet").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Quirky)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.quirky").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Rash)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.rash").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Relaxed)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.relaxed").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Sassy)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.sassy").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Serious)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.serious").toString())));
+		}
+		if (pokemon.getNature().equals(EnumNature.Timid)) {
+			lore.add(Text.of(toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature").toString()),
+					toText(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.nature.timid").toString())));
+		}
 		lore.add(Text.of(TextSerializers.FORMATTING_CODE
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.level.lore").toString()
 						+ String.valueOf(pokemon.getLevel()))));
@@ -305,7 +525,9 @@ public class Utils {
 						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore")
 						+ String.valueOf(pokemon.getStats().evs.specialDefence)
 						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore")
-						+ String.valueOf(pokemon.getStats().evs.speed))));
+						+ String.valueOf(pokemon.getStats().evs.speed) + " "
+						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.total.lore").toString().replace(
+								"%totalev%", String.valueOf(" " + dformat.format(totalEVs(pokemon) / 510.0 * 100))))));
 		lore.add(Text.of(TextSerializers.FORMATTING_CODE
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore")
 						+ String.valueOf(pokemon.getStats().ivs.hp)
@@ -318,7 +540,9 @@ public class Utils {
 						+ (WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore"))
 						+ String.valueOf(pokemon.getStats().ivs.specialDefence)
 						+ (WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
-						+ String.valueOf(pokemon.getStats().ivs.speed))));
+						+ String.valueOf(pokemon.getStats().ivs.speed) + " "
+						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString().replace(
+								"%totaliv%", String.valueOf(" " + dformat.format(totalIVs(pokemon) / 186.0 * 100))))));
 		if (pokemon.getFormEnum() != EnumNoForm.NoForm) {
 			lore.add(Text.of(TextSerializers.FORMATTING_CODE
 					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")
@@ -345,4 +569,15 @@ public class Utils {
 
 		return lore;
 	}
+
+	private static double totalEVs(Pokemon p) {
+		return p.getStats().evs.hp + p.getStats().evs.attack + p.getStats().evs.defence + p.getStats().evs.specialAttack
+				+ p.getStats().evs.specialDefence + p.getStats().evs.speed;
+	}
+
+	private static double totalIVs(Pokemon p) {
+		return p.getStats().ivs.hp + p.getStats().ivs.attack + p.getStats().ivs.defence + p.getStats().ivs.specialAttack
+				+ p.getStats().ivs.specialDefence + p.getStats().ivs.speed;
+	}
+
 }
