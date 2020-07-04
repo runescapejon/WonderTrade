@@ -1,5 +1,7 @@
 package com.mcsimonflash.sponge.wondertrade.internal;
 
+import java.awt.Color;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -142,6 +144,56 @@ public class Utils {
 		pc.set(box, pos, entry.getPokemon());
 	}
 
+	public static String getGif(Pokemon pokemon) {
+		StringBuilder builder = new StringBuilder();
+		if (pokemon.isShiny()) {
+			builder.append("http://play.pokemonshowdown.com/sprites/xyani-shiny/"
+					+ pokemon.getDisplayName().toLowerCase() + ".gif");
+		} else {
+			builder.append(
+					"http://play.pokemonshowdown.com/sprites/xyani/" + pokemon.getDisplayName().toLowerCase() + ".gif");
+		}
+
+		return builder.toString();
+
+	}
+
+	public static String getaura(Pokemon pokemon) {
+		StringBuilder builder = new StringBuilder();
+		if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
+			builder.append(pokemon.getPersistentData().getString("entity-particles:particle"));
+		} else {
+			builder.append("n/a");
+		}
+
+		return builder.toString();
+
+	}
+
+	public static String getcustomtexture(Pokemon pokemon) {
+		StringBuilder builder = new StringBuilder();
+		if (!pokemon.getCustomTexture().isEmpty()) {
+			builder.append(pokemon.getCustomTexture());
+		} else {
+			builder.append("n/a");
+		}
+
+		return builder.toString();
+
+	}
+
+	public static String gethelditem(Pokemon pokemon) {
+		StringBuilder builder = new StringBuilder();
+		if (!pokemon.getHeldItem().isEmpty()) {
+			builder.append(pokemon.getHeldItem());
+		} else {
+			builder.append("n/a");
+		}
+
+		return builder.toString();
+
+	}
+
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
 		Preconditions.checkArgument(Config.allowultrabeast || !pokemon.getSpecies().isUltraBeast(),
 				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast"));
@@ -162,6 +214,60 @@ public class Utils {
 			Sponge.getServer().getBroadcastChannel()
 					.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
 							.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
+
+			if (Config.enablediscord) {
+				DecimalFormat dformat = new DecimalFormat("#0.##");
+				DiscordWebHook webhook = new DiscordWebHook(Config.discordwebhookurl);
+				try {
+					webhook.addEmbed(new DiscordWebHook.EmbedObject().setThumbnail(getGif(entry.getPokemon()))
+							.setTitle(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.title").toString()
+									.replace("%player%", player.getName()))
+							.setDescription(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.description")
+									.toString().replace("%pokemon%", entry.getPokemon().getDisplayName()))
+							.setColor(Color.RED)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.name").toString(),
+									entry.getPokemon().getDisplayName(), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.level").toString(),
+									String.valueOf(entry.getPokemon().getLevel()), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.ability").toString(),
+									entry.getPokemon().getAbilityName(), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.nature").toString(),
+									entry.getPokemon().getNature().getTranslatedName().getUnformattedComponentText(),
+									true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.gender").toString(),
+									entry.getPokemon().getGender().getTranslatedName().getUnformattedComponentText(),
+									true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.aura").toString(),
+									getaura(entry.getPokemon()), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.customtexture")
+									.toString(), getcustomtexture(entry.getPokemon()), true)
+							.addField(
+									WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.helditem").toString(),
+									gethelditem(entry.getPokemon()), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.iv").toString(),
+									entry.getPokemon().getStats().ivs.hp + "/"
+											+ entry.getPokemon().getStats().ivs.attack + "/"
+											+ entry.getPokemon().getStats().ivs.defence + "/"
+											+ entry.getPokemon().getStats().ivs.specialAttack + "/"
+											+ entry.getPokemon().getStats().ivs.specialDefence + "/"
+											+ entry.getPokemon().getStats().ivs.speed + " ("
+											+ dformat.format(totalIVs(pokemon) / 186.0 * 100) + "%)",
+									true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.friendship")
+									.toString(), String.valueOf(entry.getPokemon().getFriendship()), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.growth").toString(),
+									String.valueOf(entry.getPokemon().getGrowth()), true)
+
+					);
+
+					webhook.execute();
+				} catch (IOException e) {
+
+					e.printStackTrace();
+
+				}
+			}
+
 		} else {
 			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(
 					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
@@ -379,7 +485,13 @@ public class Utils {
 				builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore")
 						+ pokemon.getPersistentData().getString("entity-particles:particle"));
 			}
+
 		}
+		builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.friendship.lore")
+				+ String.valueOf(pokemon.getFriendship()));
+
+		builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.growth.lore")
+				+ String.valueOf(pokemon.getGrowth()));
 		return builder.toString();
 	}
 
@@ -543,6 +655,12 @@ public class Utils {
 						+ String.valueOf(pokemon.getStats().ivs.speed) + " "
 						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString().replace(
 								"%totaliv%", String.valueOf(" " + dformat.format(totalIVs(pokemon) / 186.0 * 100))))));
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE
+				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.friendship.lore")
+						+ String.valueOf(pokemon.getFriendship()))));
+		lore.add(Text.of(TextSerializers.FORMATTING_CODE
+				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.growth.lore")
+						+ String.valueOf(pokemon.getGrowth()))));
 		if (pokemon.getFormEnum() != EnumNoForm.NoForm) {
 			lore.add(Text.of(TextSerializers.FORMATTING_CODE
 					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")

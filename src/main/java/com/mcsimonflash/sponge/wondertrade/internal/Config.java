@@ -27,10 +27,10 @@ public class Config {
 
 	private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
 	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart,
-			regenOverwritePlayers, EnableEntityParticle, notify, allowultrabeast;
+			regenOverwritePlayers, EnableEntityParticle, notify, allowultrabeast, enablediscord;
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
-	public static String prefix, GUIitem1, GUIItem2;
+	public static String prefix, GUIitem1, GUIItem2, discordwebhookurl;
 	private static ConfigHolder config, cooldowns, trades;
 
 	public static void load() {
@@ -40,6 +40,8 @@ public class Config {
 			trades = getLoader(STORAGE, "trades.conf", false);
 			EnableEntityParticle = config.getNode("Enable-EntityParticle").getBoolean(false);
 			notify = config.getNode("notify").getBoolean(false);
+			enablediscord = config.getNode("DiscordEnable").getBoolean(false);
+			discordwebhookurl = config.getNode("DiscordWebHookURL").getString("URL HERE");
 			allowEggs = config.getNode("allow-eggs").getBoolean(true);
 			allowultrabeast = config.getNode("allow-UltraBeast").getBoolean(true);
 			allowuntradeable = config.getNode("allow-untradeable").getBoolean(true);
@@ -59,6 +61,7 @@ public class Config {
 			GUIItem2 = config.getNode("GUIitem2").getString("minecraft:stained_glass_pane");
 			GUIDamage2 = config.getNode("GUIDamage2").getInt(3);
 			announceInt = config.getNode("announcement-interval").getInt(600000);
+			
 			boolean startup = Manager.trades == null;
 			Manager.trades = new TradeEntry[poolSize];
 			List<? extends ConfigurationNode> trades = Config.trades.getNode("trades").getChildrenList();
