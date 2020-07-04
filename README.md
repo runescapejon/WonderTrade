@@ -5,6 +5,7 @@
 https://discord.gg/XXgEpq3
 
 # New features
+- Added Discord Webhook that notify you when someone win a legendary/UB/Shiny pokemon
 - Improve cooldown display in lore, now it mention to players the exact hour and minutes, seconds.
 - Added in trading broadcast Ultra Beasts if someone managed to get it.
 - Fixed pokemon legendary/shiny not displaying in broadcast
