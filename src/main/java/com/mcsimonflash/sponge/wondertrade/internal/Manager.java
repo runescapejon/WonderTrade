@@ -21,6 +21,10 @@ public class Manager {
 		return ret;
 	}
 	
+	public static TradeEntry getEntry(TradeEntry entry) {
+		return entry;
+		
+	}
 	public static TradeEntry take(int index) {
 		TradeEntry entry = trades[index];
 		trades[index] = new TradeEntry(genRandomPixelmon(), Utils.ZERO_UUID, LocalDateTime.now());

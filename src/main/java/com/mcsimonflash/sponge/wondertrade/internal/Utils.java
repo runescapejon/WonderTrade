@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.text.DecimalFormat;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -24,6 +25,7 @@ import org.spongepowered.api.text.translation.locale.Locales;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.mcsimonflash.sponge.wondertrade.WonderTrade;
+import com.mcsimonflash.sponge.wondertrade.api.TradeEvent;
 import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
 import com.pixelmonmod.pixelmon.Pixelmon;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
@@ -161,7 +163,9 @@ public class Utils {
 	public static String getaura(Pokemon pokemon) {
 		StringBuilder builder = new StringBuilder();
 		if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
-			builder.append(pokemon.getPersistentData().getString("entity-particles:particle"));
+			String str = pokemon.getPersistentData().getString("entity-particles:particle");
+			String capitalize = str.substring(0, 1).toUpperCase() + str.substring(1);
+			builder.append(capitalize);
 		} else {
 			builder.append("n/a");
 		}
@@ -173,7 +177,9 @@ public class Utils {
 	public static String getcustomtexture(Pokemon pokemon) {
 		StringBuilder builder = new StringBuilder();
 		if (!pokemon.getCustomTexture().isEmpty()) {
-			builder.append(pokemon.getCustomTexture());
+			String str = pokemon.getCustomTexture();
+			String capitalize = str.substring(0, 1).toUpperCase() + str.substring(1);
+			builder.append(capitalize);
 		} else {
 			builder.append("n/a");
 		}
@@ -202,9 +208,12 @@ public class Utils {
 		Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"),
 				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable"));
 		TradeEntry entry = new TradeEntry(pokemon, player.getUniqueId(), LocalDateTime.now());
+		TradeEntry entry1 = Manager.getEntry(entry);
 		logTransaction(player, entry, true);
 		entry = Manager.trade(entry).refine(player);
 		logTransaction(player, entry, false);
+		TradeEvent evnt = new TradeEvent(player, entry, entry1, Sponge.getCauseStackManager().getCurrentCause());
+		Sponge.getEventManager().post(evnt);
 		entry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
 		Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
 				gethover(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
@@ -255,6 +264,15 @@ public class Utils {
 									true)
 							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.friendship")
 									.toString(), String.valueOf(entry.getPokemon().getFriendship()), true)
+							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.ev").toString(),
+									entry.getPokemon().getStats().evs.hp + "/"
+											+ entry.getPokemon().getStats().evs.attack + "/"
+											+ entry.getPokemon().getStats().evs.defence + "/"
+											+ entry.getPokemon().getStats().evs.specialAttack + "/"
+											+ entry.getPokemon().getStats().evs.specialDefence + "/"
+											+ entry.getPokemon().getStats().evs.speed + " ("
+											+ dformat.format(totalEVs(pokemon)   / 510.0 * 100) + "%)",
+									true)
 							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.growth").toString(),
 									String.valueOf(entry.getPokemon().getGrowth()), true)
 
@@ -349,15 +367,15 @@ public class Utils {
 						.replace("%totalev%", String.valueOf(" " + dformat.format(totalEVs(pokemon) / 510.0 * 100))))
 				.append("\n");
 		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore")).append(pokemon.getStats().ivs.hp)
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.hp.lore"))
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore"))
 				.append(pokemon.getStats().ivs.attack)
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.attack.lore"))
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.attack.lore"))
 				.append(pokemon.getStats().ivs.defence)
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.defence.lore"))
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.defence.lore"))
 				.append(pokemon.getStats().ivs.specialAttack)
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore"))
 				.append(pokemon.getStats().ivs.specialDefence)
-				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
+				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
 				.append(pokemon.getStats().ivs.speed)
 				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString()
 						.replace("%totaliv%", String.valueOf(" " + dformat.format(totalIVs(pokemon) / 186.0 * 100))));

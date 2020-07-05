@@ -4,10 +4,10 @@ import com.google.inject.Inject;
 import com.mcsimonflash.sponge.teslalibs.command.CommandService;
 import com.mcsimonflash.sponge.teslalibs.message.Message;
 import com.mcsimonflash.sponge.teslalibs.message.MessageService;
+import com.mcsimonflash.sponge.wondertrade.api.CooldownExpiredEvent;
 import com.mcsimonflash.sponge.wondertrade.command.Base;
 import com.mcsimonflash.sponge.wondertrade.command.Menu;
 import com.mcsimonflash.sponge.wondertrade.internal.Config;
- 
 import com.mcsimonflash.sponge.wondertrade.internal.Utils;
 
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.18", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.19", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
 		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
 
@@ -56,10 +56,10 @@ public class WonderTrade {
 		Path translations = directory.resolve("translations");
 		try {
 			container.getAsset("messages.properties").get().copyToDirectory(translations);
-			messages =  MessageService.of(translations, "messages");
+			messages = MessageService.of(translations, "messages");
 		} catch (IOException e) {
 			logger.error("An error occurred initializing message translations. Using internal copies.");
-			messages =  MessageService.of(container, "messages");
+			messages = MessageService.of(container, "messages");
 		}
 
 	}
@@ -84,8 +84,7 @@ public class WonderTrade {
 		return prefix;
 	}
 
-	public static Message getMessage(Locale locale, String key,
-			Object... args) {	 
+	public static Message getMessage(Locale locale, String key, Object... args) {
 		return messages.get(key, locale).args(args);
 	}
 
@@ -104,25 +103,47 @@ public class WonderTrade {
 	@Listener
 	public void onClientConnection(ClientConnectionEvent.Join event) {
 		Player p = event.getTargetEntity().getPlayer().get();
-		setnotify(p);
+		setCooldownExpiredEvent(p);
+		if (Config.notify) {
+			setnotify(p);
+		}
 	}
 	
-	
- 	public static void setnotify(Player player) {
+	//I know it's crap .-. but it was the only thing that i can think of for creating an event. 
+	//but let me explain why i did it here It's to ensure that the new event will push thru even if player is offline or server reboot.
+	public static void setCooldownExpiredEvent(Player p) {
 		AtomicReference<Task> task = new AtomicReference<>(null);
 		if (task.get() != null)
 			task.get().cancel();
-		long time = Utils.getCooldown(player)
-				- (System.currentTimeMillis() - Config.getCooldown(player.getUniqueId()));
-		AtomicLong remaining = new AtomicLong(time / 1000);
-		task.set(Task.builder().interval(1, TimeUnit.SECONDS).execute(() -> {
+		long time = Utils.getCooldown(p)
+				- (System.currentTimeMillis() - Config.getCooldown(p.getUniqueId()));
+	    	AtomicLong remaining = new AtomicLong(time / 1000);
+	    	CooldownExpiredEvent e =new CooldownExpiredEvent(p, Sponge.getCauseStackManager().getCurrentCause());
+		   task.set(Task.builder().interval(1, TimeUnit.SECONDS).execute(a -> {
 			if (remaining.getAndDecrement() == 0) {
-				player.sendMessage(Text.of(WonderTrade.getMessage(player, "wondertrade.trade.cooldown.notify")));
-				player.playSound(SoundTypes.BLOCK_NOTE_PLING, player.getLocation().getPosition(), 1);
+				Sponge.getEventManager().post(e);
 			}
 		}).submit(WonderTrade.getContainer()));
-	} 
+	  }
  
+
+	public static void setnotify(Player player) {
+		if (Config.notify) {
+			AtomicReference<Task> task = new AtomicReference<>(null);
+			if (task.get() != null)
+				task.get().cancel();
+			long time = Utils.getCooldown(player)
+					- (System.currentTimeMillis() - Config.getCooldown(player.getUniqueId()));
+			AtomicLong remaining = new AtomicLong(time / 1000);
+			task.set(Task.builder().interval(1, TimeUnit.SECONDS).execute(() -> {
+				if (remaining.getAndDecrement() == 0) {
+					player.sendMessage(Text.of(WonderTrade.getMessage(player, "wondertrade.trade.cooldown.notify")));
+					player.playSound(SoundTypes.BLOCK_NOTE_PLING, player.getLocation().getPosition(), 1);
+				}
+			}).submit(WonderTrade.getContainer()));
+		}
+	}
+
 	@Listener
 	public void onReload(GameReloadEvent event) {
 		messages.reload();

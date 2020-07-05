@@ -1,16 +1,10 @@
 package com.mcsimonflash.sponge.wondertrade.internal;
 
-import com.google.common.collect.Lists;
-import com.mcsimonflash.sponge.teslalibs.inventory.*;
-import com.mcsimonflash.sponge.wondertrade.WonderTrade;
-import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
-import com.pixelmonmod.pixelmon.Pixelmon;
-import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
-import com.pixelmonmod.pixelmon.api.storage.PCStorage;
-import com.pixelmonmod.pixelmon.client.gui.GuiResources;
-import com.pixelmonmod.pixelmon.config.PixelmonItems;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
-import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
@@ -28,11 +22,21 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.translation.locale.Locales;
 
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import com.google.common.collect.Lists;
+import com.mcsimonflash.sponge.teslalibs.inventory.Action;
+import com.mcsimonflash.sponge.teslalibs.inventory.Element;
+import com.mcsimonflash.sponge.teslalibs.inventory.Layout;
+import com.mcsimonflash.sponge.teslalibs.inventory.Page;
+import com.mcsimonflash.sponge.teslalibs.inventory.View;
+import com.mcsimonflash.sponge.wondertrade.WonderTrade;
+import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
+import com.pixelmonmod.pixelmon.Pixelmon;
+import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
+import com.pixelmonmod.pixelmon.api.storage.PCStorage;
+import com.pixelmonmod.pixelmon.client.gui.GuiResources;
+import com.pixelmonmod.pixelmon.config.PixelmonItems;
+import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
 
 public class Inventory {
 
@@ -62,6 +66,7 @@ public class Inventory {
 			.set(LIGHT_BLUE, 9, 15, 17, 27, 33, 35, 45, 51, 53).set(Page.FIRST, 7).set(Page.PREVIOUS, 16)
 			.set(Page.CURRENT, 25).set(Page.NEXT, 34).set(Page.LAST, 43).set(MENU, 52).build();
 
+	@SuppressWarnings("rawtypes")
 	private static Consumer<Action.Click> inTask(Consumer<Action.Click> consumer) {
 		return a -> Task.builder().execute(t -> consumer.accept(a)).submit(WonderTrade.getContainer());
 	}
@@ -104,6 +109,7 @@ public class Inventory {
 				.build());
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static Element createPokemonElement(Player player, Pokemon pokemon, String name,
 			Consumer<Action.Click> action) {
 		if (pokemon != null) {
@@ -174,6 +180,7 @@ public class Inventory {
 				a -> Utils.trade(player, box, pos));
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static View createTradeMenu(Player player, Pokemon pokemon, String name, Consumer<Action.Click> action) {
 		AtomicReference<Task> task = new AtomicReference<>(null);
 		View view = View.builder().archetype(InventoryArchetypes.CHEST)
@@ -190,12 +197,14 @@ public class Inventory {
 					action.accept(a);
 					player.closeInventory();
 					WonderTrade.setnotify(a.getPlayer());
+					WonderTrade.setCooldownExpiredEvent(a.getPlayer());
 				} else {
 					player.sendMessage(WonderTrade.getMessage(player, "wondertrade.trade.reset-cooldown.failure"));
 				}
 			});
-			AtomicLong seconds = new AtomicLong(time / 1000);
-			if (time > 0) {
+			AtomicLong seconds = new AtomicLong(time / 1000);	
+			if (time > 0) { 
+			
 				confirm = Element
 						.of(createItem(Sponge.getRegistry().getType(ItemType.class, "pixelmon:hourglass_silver").get(),
 								WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.title.cooldown").toString(),
@@ -272,7 +281,7 @@ public class Inventory {
 
 	private static ItemStack CreateItemLore(ItemType type, String name, Pokemon p) {
 		return ItemStack.builder().itemType(type).add(Keys.DISPLAY_NAME, Utils.toText(name))
-				.add(Keys.ITEM_LORE, Utils.getLore(p)).build();
+				.add(Keys.ITEM_LORE, (Utils.getLore(p))).build();
 	}
 
 	private static ItemStack createPokemonItem(String name, TradeEntry entry) {
@@ -281,7 +290,7 @@ public class Inventory {
 						.map(User::getName).orElse(entry.getOwner().toString());
 		return ItemStack.builder()
 				.fromContainer(createItem((ItemType) PixelmonItems.itemPixelmonSprite, name,
-						Utils.getLore(entry.getPokemon()) + "\nOwner: " + owner).toContainer()
+						 Utils.gethover(entry.getPokemon())  + "\nOwner: " + owner).toContainer()
 								.set(DataQuery.of("UnsafeData", "SpriteName"), getSpriteName(entry.getPokemon())))
 				.build();
 	}

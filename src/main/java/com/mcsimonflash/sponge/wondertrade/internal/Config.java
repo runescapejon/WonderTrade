@@ -31,6 +31,7 @@ public class Config {
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
 	public static String prefix, GUIitem1, GUIItem2, discordwebhookurl;
+	@SuppressWarnings("rawtypes")
 	private static ConfigHolder config, cooldowns, trades;
 
 	public static void load() {
@@ -74,6 +75,7 @@ public class Config {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static ConfigHolder getLoader(Path dir, String name, boolean asset) throws IOException {
 		try {
 			Path path = dir.resolve(name);
