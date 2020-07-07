@@ -271,7 +271,7 @@ public class Utils {
 											+ entry.getPokemon().getStats().evs.specialAttack + "/"
 											+ entry.getPokemon().getStats().evs.specialDefence + "/"
 											+ entry.getPokemon().getStats().evs.speed + " ("
-											+ dformat.format(totalEVs(pokemon)   / 510.0 * 100) + "%)",
+											+ dformat.format(totalEVs(pokemon) / 510.0 * 100) + "%)",
 									true)
 							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.growth").toString(),
 									String.valueOf(entry.getPokemon().getGrowth()), true)
@@ -364,7 +364,7 @@ public class Utils {
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
 				.append(pokemon.getStats().evs.speed)
 				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.total.lore").toString()
-						.replace("%totalev%", String.valueOf(" " + dformat.format(totalEVs(pokemon) / 510.0 * 100))))
+						.replace("%totalev%", String.valueOf(dformat.format(totalEVs(pokemon) / 510.0 * 100))))
 				.append("\n");
 		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore")).append(pokemon.getStats().ivs.hp)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore"))
@@ -378,7 +378,7 @@ public class Utils {
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
 				.append(pokemon.getStats().ivs.speed)
 				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString()
-						.replace("%totaliv%", String.valueOf(" " + dformat.format(totalIVs(pokemon) / 186.0 * 100))));
+						.replace("%totaliv%", String.valueOf(dformat.format(totalIVs(pokemon) / 186.0 * 100))));
 
 		if (pokemon.getGender().equals(Gender.Female)) {
 			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.gender.female.lore"));
@@ -494,14 +494,18 @@ public class Utils {
 			builder.append("\n").append((WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore")));
 		}
 		if (!pokemon.getCustomTexture().isEmpty()) {
-			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore")
-					+ pokemon.getCustomTexture());
+			String str = pokemon.getCustomTexture();
+			String capitalize = str.substring(0, 1).toUpperCase() + str.substring(1);
+			builder.append("\n").append(Text.of(TextSerializers.FORMATTING_CODE.deserialize(
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore") + capitalize)));
 		}
 
 		if (Config.EnableEntityParticle) {
 			if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
-				builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore")
-						+ pokemon.getPersistentData().getString("entity-particles:particle"));
+				String str = pokemon.getPersistentData().getString("entity-particles:particle");
+				String capitalize = str.substring(0, 1).toUpperCase() + str.substring(1);
+				builder.append("\n").append(Text.of(TextSerializers.FORMATTING_CODE
+						.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore") + capitalize)));
 			}
 
 		}
@@ -657,7 +661,7 @@ public class Utils {
 						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore")
 						+ String.valueOf(pokemon.getStats().evs.speed) + " "
 						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.total.lore").toString().replace(
-								"%totalev%", String.valueOf(" " + dformat.format(totalEVs(pokemon) / 510.0 * 100))))));
+								"%totalev%", String.valueOf(dformat.format(totalEVs(pokemon) / 510.0 * 100))))));
 		lore.add(Text.of(TextSerializers.FORMATTING_CODE
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore")
 						+ String.valueOf(pokemon.getStats().ivs.hp)
@@ -672,7 +676,7 @@ public class Utils {
 						+ (WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
 						+ String.valueOf(pokemon.getStats().ivs.speed) + " "
 						+ WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString().replace(
-								"%totaliv%", String.valueOf(" " + dformat.format(totalIVs(pokemon) / 186.0 * 100))))));
+								"%totaliv%", String.valueOf(dformat.format(totalIVs(pokemon) / 186.0 * 100))))));
 		lore.add(Text.of(TextSerializers.FORMATTING_CODE
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.friendship.lore")
 						+ String.valueOf(pokemon.getFriendship()))));
@@ -689,16 +693,19 @@ public class Utils {
 					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore").toString())));
 		}
 		if (!pokemon.getCustomTexture().isEmpty()) {
-			lore.add(Text.of(TextSerializers.FORMATTING_CODE
-					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore")
-							+ pokemon.getCustomTexture())));
+			String str = pokemon.getCustomTexture();
+			String capitalize = str.substring(0, 1).toUpperCase() + str.substring(1);
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE.deserialize(
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.customtexture.lore") + capitalize)));
+
 		}
 
 		if (Config.EnableEntityParticle) {
 			if (!pokemon.getPersistentData().getString("entity-particles:particle").isEmpty()) {
+				String str = pokemon.getPersistentData().getString("entity-particles:particle");
+				String capitalize = str.substring(0, 1).toUpperCase() + str.substring(1);
 				lore.add(Text.of(TextSerializers.FORMATTING_CODE
-						.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore")
-								+ pokemon.getPersistentData().getString("entity-particles:particle"))));
+						.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.aura.lore") + capitalize)));
 			}
 
 		}

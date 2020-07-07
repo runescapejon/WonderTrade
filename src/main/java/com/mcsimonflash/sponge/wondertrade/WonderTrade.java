@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.19", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.20", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
 		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
 
@@ -106,6 +106,12 @@ public class WonderTrade {
 		setCooldownExpiredEvent(p);
 		if (Config.notify) {
 			setnotify(p);
+		
+			if (p.isOnline() && Config.getQueue(p.getUniqueId()) == true) {
+				p.sendMessage(Text.of(WonderTrade.getMessage(p, "wondertrade.trade.cooldown.notify")));
+				p.playSound(SoundTypes.BLOCK_NOTE_PLING, p.getLocation().getPosition(), 1);	
+				Config.setQueue(p.getUniqueId()); 
+			  }
 		}
 	}
 	
@@ -139,6 +145,9 @@ public class WonderTrade {
 				if (remaining.getAndDecrement() == 0) {
 					player.sendMessage(Text.of(WonderTrade.getMessage(player, "wondertrade.trade.cooldown.notify")));
 					player.playSound(SoundTypes.BLOCK_NOTE_PLING, player.getLocation().getPosition(), 1);
+				if (!player.isOnline()) {
+					Config.SaveQueue(player.getUniqueId());
+				  }
 				}
 			}).submit(WonderTrade.getContainer()));
 		}

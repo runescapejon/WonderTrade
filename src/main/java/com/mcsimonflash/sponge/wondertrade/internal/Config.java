@@ -32,12 +32,13 @@ public class Config {
 	public static long defCooldown;
 	public static String prefix, GUIitem1, GUIItem2, discordwebhookurl;
 	@SuppressWarnings("rawtypes")
-	private static ConfigHolder config, cooldowns, trades;
+	private static ConfigHolder config, cooldowns, trades, notifyqueue;
 
 	public static void load() {
 		try {
 			config = getLoader(DIRECTORY, "wondertradeplus.conf", true);
 			cooldowns = getLoader(STORAGE, "cooldowns.conf", false);
+			notifyqueue = getLoader(STORAGE, "queue.conf", false);
 			trades = getLoader(STORAGE, "trades.conf", false);
 			EnableEntityParticle = config.getNode("Enable-EntityParticle").getBoolean(false);
 			notify = config.getNode("notify").getBoolean(false);
@@ -114,6 +115,20 @@ public class Config {
 		cooldowns.getNode(uuid.toString()).setValue(System.currentTimeMillis());
 		return cooldowns.save();
 	}
+	
+	public static boolean SaveQueue(UUID uuid) {
+		notifyqueue.getNode(uuid.toString()).setValue(true);
+		return notifyqueue.save();
+	}
+	public static boolean getQueue(UUID uuid) {
+		return notifyqueue.getNode(uuid.toString()).getValue() != null;
+	}
+	
+	public static boolean setQueue(UUID uuid) {
+		notifyqueue.getNode(uuid.toString()).setValue(false);
+		return notifyqueue.save();
+	}
+	
 
 	private static TradeEntry deserializeTrade(ConfigurationNode node) {
 		EnumSpecies type = EnumSpecies.getFromName(node.getNode("name").getString(""))
