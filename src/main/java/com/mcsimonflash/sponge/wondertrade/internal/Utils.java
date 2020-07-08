@@ -310,13 +310,13 @@ public class Utils {
 	public static String getShortDesc(Pokemon pokemon) {
 		return pokemon.isEgg() ? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.mysteriousegg").toString()
 				: "level " + pokemon.getLevel()
-						+ (pokemon.isShiny() ? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny").toString()
+						+ (pokemon.isShiny() ? " " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny").toString() + " " 
 								: " ")
 						+ (EnumSpecies.legendaries.contains(pokemon.getSpecies().name)
-								? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.legendary").toString() + " "
+								?  " " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.legendary").toString() + " "
 								: "")
 						+ (EnumSpecies.ultrabeasts.contains(pokemon.getSpecies().name)
-								? WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ultrabeast").toString() + " "
+								? " " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ultrabeast").toString() + " "
 								: "")
 						+ pokemon.getSpecies().name;
 	}
