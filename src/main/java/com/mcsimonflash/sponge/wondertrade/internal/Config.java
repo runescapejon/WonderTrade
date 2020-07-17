@@ -27,7 +27,7 @@ public class Config {
 
 	private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
 	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart,
-			regenOverwritePlayers, EnableEntityParticle, notify, allowultrabeast, enablediscord;
+			regenOverwritePlayers, EnableEntityParticle, notify, allowultrabeast, enablediscord, DiscordAnnounceSpecialPoke, DiscordAnnounceNoneSpecialPoke;
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
 	public static String prefix, GUIitem1, GUIItem2, discordwebhookurl;
@@ -51,6 +51,8 @@ public class Config {
 			broadcastTrades = config.getNode("broadcast-trades").getBoolean(true);
 			regenOnRestart = config.getNode("regen-on-restart").getBoolean(false);
 			regenOverwritePlayers = config.getNode("regen-overwrite-players").getBoolean(false);
+			DiscordAnnounceSpecialPoke = config.getNode("DiscordAnnounceLegendary").getBoolean(true);
+			DiscordAnnounceNoneSpecialPoke = config.getNode("DiscordAnnounceNoneSpecialPoke").getBoolean(false);			
 			poolSize = config.getNode("pool-size").getInt(100);
 			defCooldown = config.getNode("default-cooldown").getLong(600000);
 			minLvl = config.getNode("min-level").getInt(5);

@@ -199,6 +199,70 @@ public class Utils {
 		return builder.toString();
 
 	}
+	
+	public static void DiscordEmbed(Player player, Pokemon pokemon) {
+ 
+		DecimalFormat dformat = new DecimalFormat("#0.##");
+		DiscordWebHook webhook = new DiscordWebHook(Config.discordwebhookurl);
+		try {
+			webhook.addEmbed(new DiscordWebHook.EmbedObject().setThumbnail(getGif(pokemon))
+					.setTitle(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.title").toString()
+							.replace("%player%", player.getName()))
+					.setDescription(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.description")
+							.toString().replace("%pokemon%", pokemon.getDisplayName()))
+					.setColor(Color.RED)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.name").toString(),
+							pokemon.getDisplayName(), true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.level").toString(),
+							String.valueOf(pokemon.getLevel()), true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.ability").toString(),
+							pokemon.getAbilityName(), true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.nature").toString(),
+							pokemon.getNature().getTranslatedName().getUnformattedComponentText(),
+							true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.gender").toString(),
+							pokemon.getGender().getTranslatedName().getUnformattedComponentText(),
+							true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.aura").toString(),
+							getaura(pokemon), true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.customtexture")
+							.toString(), getcustomtexture(pokemon), true)
+					.addField(
+							WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.helditem").toString(),
+							gethelditem(pokemon), true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.iv").toString(),
+							pokemon.getStats().ivs.hp + "/"
+									+ pokemon.getStats().ivs.attack + "/"
+									+ pokemon.getStats().ivs.defence + "/"
+									+ pokemon.getStats().ivs.specialAttack + "/"
+									+ pokemon.getStats().ivs.specialDefence + "/"
+									+  pokemon.getStats().ivs.speed + " ("
+									+ dformat.format(totalIVs(pokemon) / 186.0 * 100) + "%)",
+							true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.friendship")
+							.toString(), String.valueOf(pokemon.getFriendship()), true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.ev").toString(),
+							pokemon.getStats().evs.hp + "/"
+									+ pokemon.getStats().evs.attack + "/"
+									+ pokemon.getStats().evs.defence + "/"
+									+ pokemon.getStats().evs.specialAttack + "/"
+									+ pokemon.getStats().evs.specialDefence + "/"
+									+ pokemon.getStats().evs.speed + " ("
+									+ dformat.format(totalEVs(pokemon) / 510.0 * 100) + "%)",
+							true)
+					.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.growth").toString(),
+							String.valueOf(pokemon.getGrowth()), true)
+
+			);
+
+			webhook.execute();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+ 
+	}
 
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
 		Preconditions.checkArgument(Config.allowultrabeast || !pokemon.getSpecies().isUltraBeast(),
@@ -218,77 +282,30 @@ public class Utils {
 		Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
 				gethover(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
 				gethover(entry.getPokemon()) };
+		if (Config.enablediscord) {
+		if (Config.DiscordAnnounceNoneSpecialPoke) {
+			if (!entry.getPokemon().isShiny() || !entry.getPokemon().isLegendary()
+				||  !EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name)) {
+			DiscordEmbed(player, entry.getPokemon());
+			}
+		 }
+		}
 		if (Config.broadcastTrades && (entry.getPokemon().isShiny() || entry.getPokemon().isLegendary()
 				|| EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name))) {
 			Sponge.getServer().getBroadcastChannel()
 					.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
 							.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
-
+ 
 			if (Config.enablediscord) {
-				DecimalFormat dformat = new DecimalFormat("#0.##");
-				DiscordWebHook webhook = new DiscordWebHook(Config.discordwebhookurl);
-				try {
-					webhook.addEmbed(new DiscordWebHook.EmbedObject().setThumbnail(getGif(entry.getPokemon()))
-							.setTitle(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.title").toString()
-									.replace("%player%", player.getName()))
-							.setDescription(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.description")
-									.toString().replace("%pokemon%", entry.getPokemon().getDisplayName()))
-							.setColor(Color.RED)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.name").toString(),
-									entry.getPokemon().getDisplayName(), true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.level").toString(),
-									String.valueOf(entry.getPokemon().getLevel()), true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.ability").toString(),
-									entry.getPokemon().getAbilityName(), true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.nature").toString(),
-									entry.getPokemon().getNature().getTranslatedName().getUnformattedComponentText(),
-									true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.gender").toString(),
-									entry.getPokemon().getGender().getTranslatedName().getUnformattedComponentText(),
-									true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.aura").toString(),
-									getaura(entry.getPokemon()), true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.customtexture")
-									.toString(), getcustomtexture(entry.getPokemon()), true)
-							.addField(
-									WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.helditem").toString(),
-									gethelditem(entry.getPokemon()), true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.iv").toString(),
-									entry.getPokemon().getStats().ivs.hp + "/"
-											+ entry.getPokemon().getStats().ivs.attack + "/"
-											+ entry.getPokemon().getStats().ivs.defence + "/"
-											+ entry.getPokemon().getStats().ivs.specialAttack + "/"
-											+ entry.getPokemon().getStats().ivs.specialDefence + "/"
-											+ entry.getPokemon().getStats().ivs.speed + " ("
-											+ dformat.format(totalIVs(pokemon) / 186.0 * 100) + "%)",
-									true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.friendship")
-									.toString(), String.valueOf(entry.getPokemon().getFriendship()), true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.ev").toString(),
-									entry.getPokemon().getStats().evs.hp + "/"
-											+ entry.getPokemon().getStats().evs.attack + "/"
-											+ entry.getPokemon().getStats().evs.defence + "/"
-											+ entry.getPokemon().getStats().evs.specialAttack + "/"
-											+ entry.getPokemon().getStats().evs.specialDefence + "/"
-											+ entry.getPokemon().getStats().evs.speed + " ("
-											+ dformat.format(totalEVs(pokemon) / 510.0 * 100) + "%)",
-									true)
-							.addField(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.discord.growth").toString(),
-									String.valueOf(entry.getPokemon().getGrowth()), true)
-
-					);
-
-					webhook.execute();
-				} catch (IOException e) {
-
-					e.printStackTrace();
-
+				if (Config.DiscordAnnounceSpecialPoke) {
+						DiscordEmbed(player, entry.getPokemon());
 				}
 			}
 
 		} else {
 			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(
 					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
+ 
 		}
 		return entry;
 	}
