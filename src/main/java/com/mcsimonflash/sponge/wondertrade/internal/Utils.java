@@ -281,11 +281,11 @@ public class Utils {
 		entry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
 		Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
 				gethover(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
-				gethover(entry.getPokemon()) };
+				gethover(entry.getPokemon())};
 		if (Config.enablediscord) {
 		if (Config.DiscordAnnounceNoneSpecialPoke) {
-			if (!entry.getPokemon().isShiny() || !entry.getPokemon().isLegendary()
-				||  !EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name)) {
+			if (!(entry.getPokemon().isShiny() || entry.getPokemon().isLegendary()
+				||  EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name))) {
 			DiscordEmbed(player, entry.getPokemon());
 			}
 		 }
