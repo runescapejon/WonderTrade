@@ -27,7 +27,7 @@ public class Config {
 
 	private static final Path DIRECTORY = WonderTrade.getDirectory(), STORAGE = DIRECTORY.resolve("storage");
 	public static boolean allowEggs, allowuntradeable, HiddenAbility, broadcastTrades, regenOnRestart,
-			regenOverwritePlayers, EnableEntityParticle, notify, allowultrabeast, enablediscord, DiscordAnnounceSpecialPoke, DiscordAnnounceNoneSpecialPoke;
+			regenOverwritePlayers, EnableEntityParticle, notify, allowultrabeast, enablediscord, DiscordAnnounceSpecialPoke, DiscordAnnounceNoneSpecialPoke, allowDitto;
 	public static int poolSize, minLvl, maxLvl, shinyRate, legendRate, announceInt, GUIDamage1, GUIDamage2;
 	public static long defCooldown;
 	public static String prefix, GUIitem1, GUIItem2, discordwebhookurl;
@@ -44,6 +44,7 @@ public class Config {
 			notify = config.getNode("notify").getBoolean(false);
 			enablediscord = config.getNode("DiscordEnable").getBoolean(false);
 			discordwebhookurl = config.getNode("DiscordWebHookURL").getString("URL HERE");
+			allowDitto = config.getNode("allow-ditto").getBoolean(true);			
 			allowEggs = config.getNode("allow-eggs").getBoolean(true);
 			allowultrabeast = config.getNode("allow-UltraBeast").getBoolean(true);
 			allowuntradeable = config.getNode("allow-untradeable").getBoolean(true);

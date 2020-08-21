@@ -114,6 +114,17 @@ public class Inventory {
 			Consumer<Action.Click> action) {
 		if (pokemon != null) {
 
+			if (Config.allowDitto && pokemon.isPokemon(EnumSpecies.Ditto)) {
+				return Element.of(createPokemonItem("&b" + name, pokemon), action);
+		}
+			
+			if (Config.allowDitto == false && pokemon.isPokemon(EnumSpecies.Ditto)) {
+				ItemStack item = createPokemonItem("&b" + name, pokemon);
+				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
+						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ditto").toText()));
+				return Element.of(item);
+		}
+			
 			if (Config.allowultrabeast && pokemon.getSpecies().isUltraBeast()) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}

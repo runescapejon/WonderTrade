@@ -265,6 +265,8 @@ public class Utils {
 	}
 
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
+		Preconditions.checkArgument(Config.allowDitto || !pokemon.isPokemon(EnumSpecies.Ditto),
+				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ditto"));	
 		Preconditions.checkArgument(Config.allowultrabeast || !pokemon.getSpecies().isUltraBeast(),
 				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast"));
 		Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(),
@@ -281,11 +283,11 @@ public class Utils {
 		entry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
 		Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
 				gethover(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
-				gethover(entry.getPokemon()) };
+				gethover(entry.getPokemon())};
 		if (Config.enablediscord) {
 		if (Config.DiscordAnnounceNoneSpecialPoke) {
-			if (!entry.getPokemon().isShiny() || !entry.getPokemon().isLegendary()
-				||  !EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name)) {
+			if (!(entry.getPokemon().isShiny() || entry.getPokemon().isLegendary()
+				||  EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name))) {
 			DiscordEmbed(player, entry.getPokemon());
 			}
 		 }
@@ -546,8 +548,9 @@ public class Utils {
 				.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.pokemon.lore").toString()
 						+ pokemon.getSpecies().name)));
 		if (pokemon.getHeldItem() != ItemStack.EMPTY) {
-			lore.add(Text.of(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.helditem.lore")
-					+ pokemon.getHeldItem().getDisplayName()));
+			lore.add(Text.of(TextSerializers.FORMATTING_CODE
+					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.helditem.lore")
+					+ pokemon.getHeldItem().getDisplayName())));
 		}
 
 		lore.add(Text.of(TextSerializers.FORMATTING_CODE

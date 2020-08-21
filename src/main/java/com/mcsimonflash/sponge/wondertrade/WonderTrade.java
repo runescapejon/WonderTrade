@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.22", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
+@Plugin(id = WonderTrade.PluginID, name = "WonderTradePlus", version = "1.1.24", description = "Lets you do spicy thing with ur beloved pokémon.", dependencies = @Dependency(id = "pixelmon", version = "8.0.0"), authors = {
 		"Simon_Flash", "happyzleaf", "runescapejon" })
 public class WonderTrade {
 
