@@ -239,8 +239,8 @@ public class Inventory {
 														.replace("%h%",
 																String.valueOf(TimeUnit.MILLISECONDS.toHours(time)))
 														.replace("%m%",
-																String.valueOf(TimeUnit.MILLISECONDS.toMinutes(time)))
-														.replace("%s%", String.valueOf(seconds.getAndDecrement()))))))
+																String.valueOf(seconds.getAndDecrement() / 60))
+														.replace("%s%", String.valueOf(seconds.getAndDecrement() % 60))))))
 						.interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
 			} else {
 				confirm = Element.of(createItem(ItemTypes.SLIME_BALL,
