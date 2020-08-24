@@ -239,7 +239,7 @@ public class Inventory {
 														.replace("%h%",
 																String.valueOf(TimeUnit.MILLISECONDS.toHours(time)))
 														.replace("%m%",
-																String.valueOf(seconds.getAndDecrement() / 60))
+																String.valueOf((seconds.get() / 60)% 60))
 														.replace("%s%", String.valueOf(seconds.getAndDecrement() % 60))))))
 						.interval(1, TimeUnit.SECONDS).submit(WonderTrade.getContainer()));
 			} else {
