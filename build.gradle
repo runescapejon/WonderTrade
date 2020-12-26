@@ -18,12 +18,12 @@ plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
     id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
-compileJava.options.encoding = 'UTF-8'
+compileJava { options.encoding = "UTF-8" }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 group 'com.mcsimonflash.sponge.wondertrade'
-version '1.1.27'
+version '1.1.28'
 
 ext.spongeversion = '7.2.0-SNAPSHOT'
 ext.teslaversion = '1.1.6'
@@ -37,7 +37,8 @@ repositories {
 
 dependencies {
     shadow "org.spongepowered:spongeapi:${spongeversion}"
-    implementation "com.github.SimonFlash.TeslaPowered:TeslaLibs:v${teslaversion}"
+   
+    implementation fileTree(dir: 'teslapowered', include: "TeslaPowered-s7.1-v1.1.7.jar")
     shadow fileTree(dir: 'libs-', include: "Pixelmon-1.12.2-${pixelmonversion}-universal.jar")
 }
 
