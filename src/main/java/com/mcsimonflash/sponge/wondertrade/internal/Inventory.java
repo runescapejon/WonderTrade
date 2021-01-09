@@ -118,7 +118,7 @@ public class Inventory {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 		}
 			
-			if (Config.allowDitto == false && pokemon.isPokemon(EnumSpecies.Ditto)) {
+			if (Config.allowDitto && pokemon.isPokemon(EnumSpecies.Ditto)) {
 				ItemStack item = createPokemonItem("&b" + name, pokemon);
 				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
 						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ditto").toText()));
@@ -129,7 +129,7 @@ public class Inventory {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}
 
-			if (Config.allowultrabeast == false && pokemon.getSpecies().isUltraBeast()) {
+			if (Config.allowultrabeast && pokemon.getSpecies().isUltraBeast()) {
 				ItemStack item = createPokemonItem("&b" + name, pokemon);
 				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
 						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast").toText()));
@@ -141,7 +141,7 @@ public class Inventory {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}
 
-			if (Config.HiddenAbility == false && pokemon.getAbilitySlot() == 2) {
+			if (Config.HiddenAbility && pokemon.getAbilitySlot() == 2) {
 				ItemStack item = createPokemonItem("&b" + name, pokemon);
 				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
 						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-hiddenability").toText()));
@@ -151,7 +151,7 @@ public class Inventory {
 			if (Config.allowuntradeable && !pokemon.hasSpecFlag("untradeable")) {
 				return Element.of(createPokemonItem("&b" + name, pokemon), action);
 			}
-			if (Config.allowuntradeable == false && pokemon.hasSpecFlag("untradeable")) {
+			if (Config.allowuntradeable && pokemon.hasSpecFlag("untradeable")) {
 				ItemStack item = createPokemonItem("&b" + name, pokemon);
 				item.offer(Keys.ITEM_LORE, Lists.newArrayList(
 						WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable").toText()));
