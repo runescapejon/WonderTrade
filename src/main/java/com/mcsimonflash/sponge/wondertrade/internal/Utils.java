@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.text.DecimalFormat;
 
+import net.minecraft.util.Tuple;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -137,23 +138,21 @@ public class Utils {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
 		recallAllPokemon(party);
 		TradeEntry entry = trade(player, party.getAll()[slot]);
-		party.set(slot, entry.getPokemon());
+		if (entry != null) party.set(slot, entry.getPokemon());
 	}
 
 	public static void trade(Player player, int box, int pos) {
 		PCStorage pc = Pixelmon.storageManager.getPCForPlayer(player.getUniqueId());
 		TradeEntry entry = trade(player, pc.get(box, pos));
-		pc.set(box, pos, entry.getPokemon());
+		if (entry != null) pc.set(box, pos, entry.getPokemon());
 	}
 
 	public static String getGif(Pokemon pokemon) {
 		StringBuilder builder = new StringBuilder();
 		if (pokemon.isShiny()) {
-			builder.append("http://play.pokemonshowdown.com/sprites/xyani-shiny/"
-					+ pokemon.getDisplayName().toLowerCase() + ".gif");
+			builder.append("http://play.pokemonshowdown.com/sprites/xyani-shiny/").append(pokemon.getDisplayName().toLowerCase()).append(".gif");
 		} else {
-			builder.append(
-					"http://play.pokemonshowdown.com/sprites/xyani/" + pokemon.getDisplayName().toLowerCase() + ".gif");
+			builder.append("http://play.pokemonshowdown.com/sprites/xyani/").append(pokemon.getDisplayName().toLowerCase()).append(".gif");
 		}
 
 		return builder.toString();
@@ -265,51 +264,54 @@ public class Utils {
 	}
 
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
-		Preconditions.checkArgument(Config.allowDitto || !pokemon.isPokemon(EnumSpecies.Ditto),
-				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ditto"));	
-		Preconditions.checkArgument(Config.allowultrabeast || !pokemon.getSpecies().isUltraBeast(),
-				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast"));
-		Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(),
-				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs"));
-		Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"),
-				WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable"));
 		TradeEntry entry = new TradeEntry(pokemon, player.getUniqueId(), LocalDateTime.now());
-		TradeEntry entry1 = Manager.getEntry(entry);
-		logTransaction(player, entry, true);
-		entry = Manager.trade(entry).refine(player);
-		logTransaction(player, entry, false);
-		TradeEvent evnt = new TradeEvent(player, entry, entry1, Sponge.getCauseStackManager().getCurrentCause());
-		Sponge.getEventManager().post(evnt);
-		entry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
-		Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
-				gethover(pokemon), "received", getShortDesc(entry.getPokemon()), "received-details",
-				gethover(entry.getPokemon())};
-		if (Config.enablediscord) {
-		if (Config.DiscordAnnounceNoneSpecialPoke) {
-			if (!(entry.getPokemon().isShiny() || entry.getPokemon().isLegendary()
-				||  EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name))) {
-			DiscordEmbed(player, entry.getPokemon());
-			}
-		 }
-		}
-		if (Config.broadcastTrades && (entry.getPokemon().isShiny() || entry.getPokemon().isLegendary()
-				|| EnumSpecies.ultrabeasts.contains(entry.getPokemon().getSpecies().name))) {
-			Sponge.getServer().getBroadcastChannel()
-					.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
-							.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
- 
+		Tuple<Integer, TradeEntry> tuple = Manager.getPossibleTrade();
+		if (!Sponge.getEventManager().post(new TradeEvent(player, tuple.getSecond(), entry, Sponge.getCauseStackManager().getCurrentCause()))) {
+			Preconditions.checkArgument(Config.allowDitto || !pokemon.isPokemon(EnumSpecies.Ditto),
+					WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ditto"));
+			Preconditions.checkArgument(Config.allowultrabeast || !pokemon.getSpecies().isUltraBeast(),
+					WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ultrabeast"));
+			Preconditions.checkArgument(Config.allowEggs || !pokemon.isEgg(),
+					WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-eggs"));
+			Preconditions.checkArgument(Config.allowuntradeable || !pokemon.hasSpecFlag("untradeable"),
+					WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-untradeable"));
+
+			logTransaction(player, entry, true);
+			TradeEntry newEntry = Manager.trade(entry, tuple).refine(player);
+			logTransaction(player, newEntry, false);
+
+			newEntry.getPokemon().getPersistentData().setBoolean(WonderTrade.PluginID, true);
+			Object[] args = new Object[] { "player", player.getName(), "traded", getShortDesc(pokemon), "traded-details",
+					gethover(pokemon), "received", getShortDesc(newEntry.getPokemon()), "received-details",
+					gethover(newEntry.getPokemon())};
 			if (Config.enablediscord) {
-				if (Config.DiscordAnnounceSpecialPoke) {
-						DiscordEmbed(player, entry.getPokemon());
+				if (Config.DiscordAnnounceNoneSpecialPoke) {
+					if (!(newEntry.getPokemon().isShiny() || newEntry.getPokemon().isLegendary()
+							||  EnumSpecies.ultrabeasts.contains(newEntry.getPokemon().getSpecies().name))) {
+						DiscordEmbed(player, newEntry.getPokemon());
+					}
 				}
 			}
+			if (Config.broadcastTrades && (newEntry.getPokemon().isShiny() || newEntry.getPokemon().isLegendary()
+					|| EnumSpecies.ultrabeasts.contains(newEntry.getPokemon().getSpecies().name))) {
+				Sponge.getServer().getBroadcastChannel()
+						.send(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(WonderTrade
+								.getMessage(Locales.DEFAULT, "wondertrade.trade.success.broadcast", args).toString())));
 
-		} else {
-			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(
-					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
- 
+				if (Config.enablediscord) {
+					if (Config.DiscordAnnounceSpecialPoke) {
+						DiscordEmbed(player, newEntry.getPokemon());
+					}
+				}
+
+			} else {
+				player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(
+						WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.success.message", args).toString())));
+
+			}
+			return newEntry;
 		}
-		return entry;
+		return null; //Entry has been cancelled, need to null check this.
 	}
 
 	public static void take(Player player, int index) {
@@ -381,9 +383,8 @@ public class Utils {
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialattack.lore"))
 				.append(pokemon.getStats().evs.specialDefence)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.specialdefence.lore"))
-				.append(pokemon.getStats().evs.speed)
-				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.total.lore").toString()
-						.replace("%totalev%", String.valueOf(dformat.format(totalEVs(pokemon) / 510.0 * 100))))
+				.append(pokemon.getStats().evs.speed).append(" ").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.ev.total.lore").toString()
+				.replace("%totalev%", String.valueOf(dformat.format(totalEVs(pokemon) / 510.0 * 100))))
 				.append("\n");
 		builder.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.lore")).append(pokemon.getStats().ivs.hp)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.hp.lore"))
@@ -395,9 +396,8 @@ public class Utils {
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialattack.lore"))
 				.append(pokemon.getStats().ivs.specialDefence)
 				.append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.specialdefence.lore"))
-				.append(pokemon.getStats().ivs.speed)
-				.append(" " + WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString()
-						.replace("%totaliv%", String.valueOf(dformat.format(totalIVs(pokemon) / 186.0 * 100))));
+				.append(pokemon.getStats().ivs.speed).append(" ").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.iv.total.lore").toString()
+				.replace("%totaliv%", String.valueOf(dformat.format(totalIVs(pokemon) / 186.0 * 100))));
 
 		if (pokemon.getGender().equals(Gender.Female)) {
 			builder.append("\n").append(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.gender.female.lore"));
@@ -708,7 +708,7 @@ public class Utils {
 					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.form.lore")
 							+ String.valueOf(pokemon.getFormEnum()))));
 		}
-		if (pokemon.isShiny() == true) {
+		if (pokemon.isShiny()) {
 			lore.add(Text.of(TextSerializers.FORMATTING_CODE
 					.deserialize(WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.shiny.lore").toString())));
 		}

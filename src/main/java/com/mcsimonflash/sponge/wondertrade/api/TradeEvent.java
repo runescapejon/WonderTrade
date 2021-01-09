@@ -1,6 +1,7 @@
 package com.mcsimonflash.sponge.wondertrade.api;
 
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.impl.AbstractEvent;
 
@@ -10,11 +11,12 @@ import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
  * an event that grab information of a player trade during the wondertrade
  * trading system.
  */
-public class TradeEvent extends AbstractEvent {
+public class TradeEvent extends AbstractEvent implements Cancellable {
 	private Player player;
 	private Cause cause;
 	private TradeEntry ReceivePokemon;
 	private TradeEntry SendPokemon;
+	private boolean cancelled;
 
 	public TradeEvent(Player player, TradeEntry ReceivePokemon, TradeEntry SendPokemon, Cause cause) {
 		super();
@@ -45,4 +47,13 @@ public class TradeEvent extends AbstractEvent {
 		return this.cause;
 	}
 
+	@Override
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	@Override
+	public void setCancelled(boolean cancel) {
+		this.cancelled = cancel;
+	}
 }

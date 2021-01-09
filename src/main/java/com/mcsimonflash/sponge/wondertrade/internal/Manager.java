@@ -1,11 +1,10 @@
 package com.mcsimonflash.sponge.wondertrade.internal;
 
-import com.google.inject.Key;
 import com.mcsimonflash.sponge.wondertrade.data.TradeEntry;
-import com.pixelmonmod.pixelmon.api.pokemon.EnumInitializeCategory;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.api.pokemon.PokemonSpec;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import net.minecraft.util.Tuple;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -15,17 +14,21 @@ public class Manager {
 	private static final Random RANDOM = new Random();
 	static TradeEntry[] trades;
 
-	public static TradeEntry trade(TradeEntry entry) {
-		int index = RANDOM.nextInt(trades.length);
-		TradeEntry ret = trades[index];
-		trades[index] = entry;
-		Config.saveTrade(index);
-		return ret;
+	public static TradeEntry trade(TradeEntry entry, Tuple<Integer, TradeEntry> tuple) {
+		trades[tuple.getFirst()] = entry;
+		Config.saveTrade(tuple.getFirst());
+		return tuple.getSecond();
 	}
 
-	public static TradeEntry getEntry(TradeEntry entry) {
-		return entry;
-
+	/***
+	 * Get the Index and TradeEntry for the possible trade, if event is posted, trade above.
+	 *
+	 * @return Tuple<Integer, TradeEntry>
+	 */
+	public static Tuple<Integer, TradeEntry> getPossibleTrade() {
+		int index = RANDOM.nextInt(trades.length);
+		TradeEntry ret = trades[index];
+		return new Tuple<>(index, ret);
 	}
 
 	public static TradeEntry take(int index) {
@@ -55,12 +58,12 @@ public class Manager {
 	//made a small workaround to EnumSpecies#RandomPoke that was generating in pool regardless of config set.
 		//this should prevent it and set it to Pidgey a normal type pokemon 
 		if (p.getSpecies().isUltraBeast()) {
-			if (Config.allowultrabeast == false) {
+			if (!Config.allowultrabeast) {
 				p.setSpecies(EnumSpecies.Pidgey);
 			}
 		}
 		if (p.isPokemon(EnumSpecies.Ditto)) {
-			if (Config.allowDitto == false) {
+			if (!Config.allowDitto) {
 				p.setSpecies(EnumSpecies.Pidgey);
 			}
 		}
