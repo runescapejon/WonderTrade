@@ -39,7 +39,7 @@ dependencies {
     shadow "org.spongepowered:spongeapi:${spongeversion}"
    
     implementation fileTree(dir: 'teslapowered', include: "TeslaPowered*.jar")
-    implementation fileTree(dir: 'libs-', include: "Pixelmon-1.12.2-${pixelmonversion}*.jar")
+    shadow fileTree(dir: 'libs-', include: "Pixelmon-1.12.2-${pixelmonversion}*.jar")
 }
 
 jar {
