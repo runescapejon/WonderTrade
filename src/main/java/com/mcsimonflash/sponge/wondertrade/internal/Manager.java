@@ -21,9 +21,9 @@ public class Manager {
 	}
 
 	/***
+	 * Get the Index and TradeEntry for the possible trade, if event is posted, trade above.
 	 *
-	 * Get the index and TradeEntry for the possible trade, if event is posted, trade above.
-	 * @return Tuple
+	 * @return Tuple<Integer, TradeEntry>
 	 */
 	public static Tuple<Integer, TradeEntry> getPossibleTrade() {
 		int index = RANDOM.nextInt(trades.length);
@@ -58,12 +58,12 @@ public class Manager {
 	//made a small workaround to EnumSpecies#RandomPoke that was generating in pool regardless of config set.
 		//this should prevent it and set it to Pidgey a normal type pokemon 
 		if (p.getSpecies().isUltraBeast()) {
-			if (Config.allowultrabeast == false) {
+			if (!Config.allowultrabeast) {
 				p.setSpecies(EnumSpecies.Pidgey);
 			}
 		}
 		if (p.isPokemon(EnumSpecies.Ditto)) {
-			if (Config.allowDitto == false) {
+			if (!Config.allowDitto) {
 				p.setSpecies(EnumSpecies.Pidgey);
 			}
 		}
