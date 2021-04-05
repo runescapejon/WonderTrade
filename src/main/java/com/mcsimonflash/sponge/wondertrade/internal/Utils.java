@@ -266,6 +266,11 @@ public class Utils {
 	private static TradeEntry trade(Player player, Pokemon pokemon) {
 		TradeEntry entry = new TradeEntry(pokemon, player.getUniqueId(), LocalDateTime.now());
 		Tuple<Integer, TradeEntry> tuple = Manager.getPossibleTrade();
+		if (pokemon.isInRanch()) {
+			player.sendMessage(Text.of(TextSerializers.FORMATTING_CODE.deserialize(Config.prefix), parseText(
+					WonderTrade.getMessage(Locales.DEFAULT, "wondertrade.trade.no.breed").toString())));
+			return null;
+		}
 		if (!Sponge.getEventManager().post(new TradeEvent(player, tuple.getSecond(), entry, Sponge.getCauseStackManager().getCurrentCause()))) {
 			Preconditions.checkArgument(Config.allowDitto || !pokemon.isPokemon(EnumSpecies.Ditto),
 					WonderTrade.getMessage(player.getLocale(), "wondertrade.trade.no-ditto"));
@@ -318,9 +323,9 @@ public class Utils {
 		PlayerPartyStorage party = Pixelmon.storageManager.getParty(player.getUniqueId());
 		recallAllPokemon(party);
 		TradeEntry entry = Manager.take(index).refine(player);
-
 		logTransaction(player, entry, false);
 		party.add(entry.getPokemon());
+		
 	}
 
 	public static void logTransaction(User user, TradeEntry entry, boolean add) {
